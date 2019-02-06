@@ -38,20 +38,20 @@ extension UIView {
 //    }
 //}
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIScrollViewDelegate {
 
     @IBOutlet weak var imageHolder: UIImageView!
     @IBOutlet weak var doneBttn: UIButton!
     @IBOutlet weak var cancelBttn: UIButton!
     @IBOutlet weak var cropBttn: UIButton!
-    @IBOutlet weak var scrollView: UIScrollView!// {
-//        didSet{
-//            scrollView.delegate = self
-//            scrollView.minimumZoomScale = 1.0
-//            scrollView.maximumZoomScale = 10.0
-//        }
-//    }
-    
+    @IBOutlet weak var scrollView: UIScrollView! {
+        didSet {
+            scrollView.delegate = self
+            scrollView.minimumZoomScale = 1.0
+            scrollView.maximumZoomScale = 10.0
+        }
+    }
+
     var originalImg: UIImage?
     var croppedImage: UIImage?
     var rec: CGRect!
@@ -82,7 +82,7 @@ class ViewController: UIViewController {
         imageHolder.layer.addSublayer(shapeLayer)
         
         // Create a view filling the imageView.
-        overlay = UIView(frame: imageHolder.frame)
+        overlay = UIView(frame: scrollView.frame)
         
         // Set a semi-transparent, black background.
         overlay!.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
@@ -133,9 +133,9 @@ class ViewController: UIViewController {
         })
     }
     
-//    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-//        return imageHolder
-//    }
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return imageHolder
+    }
     
     func cropImage(image: UIImage, toRect: CGRect) -> UIImage? {
         // Cropping is available trhough CGGraphics
@@ -148,7 +148,7 @@ class ViewController: UIViewController {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         clear()
-        startPoint = touches.first?.location(in: imageHolder)
+        startPoint = touches.first?.location(in: scrollView)
     }
     
     func clear() {
@@ -164,16 +164,16 @@ class ViewController: UIViewController {
         let point: CGPoint
 
         if let predictedTouch = event?.predictedTouches(for: touch)?.last {
-            point = predictedTouch.location(in: imageHolder)
+            point = predictedTouch.location(in: scrollView)
         } else {
-            point = touch.location(in: imageHolder)
+            point = touch.location(in: scrollView)
         }
         updatePath(from: startPoint, to: point)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let startPoint = startPoint, let touch = touches.first else { return }
-        let point = touch.location(in: imageHolder)
+        let point = touch.location(in: scrollView)
         updatePath(from: startPoint, to: point)
         imageHolder.image = imageHolder.snapshot(afterScreenUpdates: true)
         shapeLayer.path = nil

@@ -18,22 +18,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TBO-YK-KHJ">
-                                <rect key="frame" x="0.0" y="104" width="375" height="501"/>
-                                <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Rax-xq-oVQ">
-                                        <rect key="frame" x="0.0" y="0.0" width="375" height="501"/>
-                                    </imageView>
-                                </subviews>
-                                <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="Rax-xq-oVQ" secondAttribute="trailing" id="IaH-tr-iWz"/>
-                                    <constraint firstItem="Rax-xq-oVQ" firstAttribute="width" secondItem="TBO-YK-KHJ" secondAttribute="width" id="LHw-lt-ddM"/>
-                                    <constraint firstItem="Rax-xq-oVQ" firstAttribute="centerY" secondItem="TBO-YK-KHJ" secondAttribute="centerY" id="R4B-dw-U1e"/>
-                                    <constraint firstItem="Rax-xq-oVQ" firstAttribute="height" secondItem="TBO-YK-KHJ" secondAttribute="height" id="Tpw-FR-DWS"/>
-                                    <constraint firstAttribute="bottom" secondItem="Rax-xq-oVQ" secondAttribute="bottom" id="WT4-TC-ACu"/>
-                                    <constraint firstItem="Rax-xq-oVQ" firstAttribute="leading" secondItem="TBO-YK-KHJ" secondAttribute="leading" id="eAR-gF-SfG"/>
-                                </constraints>
-                            </scrollView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gDn-bY-5kL">
                                 <rect key="frame" x="152.66666666666666" y="645" width="70" height="33"/>
                                 <color key="backgroundColor" red="0.1218542588" green="0.37482715709999997" blue="0.50719026550000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -79,22 +63,31 @@
                                     <action selector="cancelBttnPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="gED-KU-8K0"/>
                                 </connections>
                             </button>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ssZ-r1-Fs9">
+                                <rect key="frame" x="0.0" y="109" width="375" height="501"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Rax-xq-oVQ">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="501"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                </subviews>
+                            </scrollView>
                         </subviews>
                         <color key="backgroundColor" red="0.20109124403250844" green="0.24683548745356107" blue="0.30277367276057865" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
-                            <constraint firstItem="TBO-YK-KHJ" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="20l-Xq-L39"/>
-                            <constraint firstItem="TBO-YK-KHJ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="7Vb-qS-6Y2"/>
-                            <constraint firstItem="gDn-bY-5kL" firstAttribute="top" secondItem="TBO-YK-KHJ" secondAttribute="bottom" constant="40" id="BFk-q7-KvD"/>
-                            <constraint firstItem="Wj5-tJ-NOS" firstAttribute="top" secondItem="TBO-YK-KHJ" secondAttribute="bottom" constant="87" id="Fa1-Gy-izf"/>
+                            <constraint firstItem="ssZ-r1-Fs9" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="A3e-uc-fIf"/>
                             <constraint firstItem="Wj5-tJ-NOS" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="GBJ-h7-xtu"/>
-                            <constraint firstItem="TBO-YK-KHJ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="TkY-8k-xpj"/>
+                            <constraint firstItem="ssZ-r1-Fs9" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="P9h-4y-Rnf"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="Wj5-tJ-NOS" secondAttribute="bottom" constant="53" id="WbM-8V-MY7"/>
+                            <constraint firstItem="Wj5-tJ-NOS" firstAttribute="top" secondItem="ssZ-r1-Fs9" secondAttribute="bottom" constant="82" id="XL4-5I-YmP"/>
+                            <constraint firstItem="ssZ-r1-Fs9" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="65" id="eYL-br-pR3"/>
                             <constraint firstItem="gDn-bY-5kL" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="fqs-bL-aAc"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="O1D-7b-vry" secondAttribute="trailing" constant="16" id="ha9-QR-sfO"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="O1D-7b-vry" secondAttribute="bottom" constant="53" id="isY-1Z-Oew"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="gDn-bY-5kL" secondAttribute="bottom" constant="100" id="pUg-v5-G49"/>
-                            <constraint firstItem="O1D-7b-vry" firstAttribute="top" secondItem="TBO-YK-KHJ" secondAttribute="bottom" constant="87" id="uaa-xF-w5t"/>
-                            <constraint firstItem="TBO-YK-KHJ" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="60" id="uoI-Bj-7TG"/>
+                            <constraint firstItem="O1D-7b-vry" firstAttribute="top" secondItem="ssZ-r1-Fs9" secondAttribute="bottom" constant="82" id="rEa-lx-adJ"/>
+                            <constraint firstItem="ssZ-r1-Fs9" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="wav-Or-OyB"/>
+                            <constraint firstItem="gDn-bY-5kL" firstAttribute="top" secondItem="ssZ-r1-Fs9" secondAttribute="bottom" constant="35" id="woq-GD-2CE"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
@@ -103,7 +96,7 @@
                         <outlet property="cropBttn" destination="gDn-bY-5kL" id="fpu-MZ-RyT"/>
                         <outlet property="doneBttn" destination="O1D-7b-vry" id="D8n-jZ-yQV"/>
                         <outlet property="imageHolder" destination="Rax-xq-oVQ" id="Y2r-B4-qK5"/>
-                        <outlet property="scrollView" destination="TBO-YK-KHJ" id="KEi-7N-9SZ"/>
+                        <outlet property="scrollView" destination="ssZ-r1-Fs9" id="6Xi-8w-Kek"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
