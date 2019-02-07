@@ -18,32 +18,9 @@ extension UIView {
     }
 }
 
-//extension UIImageView {
-//    func imageFrame()->CGRect{
-//        let imageViewSize = self.frame.size
-//        guard let imageSize = self.image?.size else{return CGRect.zero}
-//        let imageRatio = imageSize.width / imageSize.height
-//        let imageViewRatio = imageViewSize.width / imageViewSize.height
-//        if imageRatio < imageViewRatio {
-//            let scaleFactor = imageViewSize.height / imageSize.height
-//            let width = imageSize.width * scaleFactor
-//            let topLeftX = (imageViewSize.width - width) * 0.5
-//            return CGRect(x: topLeftX, y: 0, width: width, height: imageViewSize.height)
-//        }else{
-//            let scalFactor = imageViewSize.width / imageSize.width
-//            let height = imageSize.height * scalFactor
-//            let topLeftY = (imageViewSize.height - height) * 0.5
-//            return CGRect(x: 0, y: topLeftY, width: imageViewSize.width, height: height)
-//        }
-//    }
-//}
-
 class ViewController: UIViewController, UIScrollViewDelegate {
 
     @IBOutlet weak var imageHolder: UIImageView!
-    @IBOutlet weak var doneBttn: UIButton!
-    @IBOutlet weak var cancelBttn: UIButton!
-    @IBOutlet weak var cropBttn: UIButton!
     @IBOutlet weak var scrollView: UIScrollView! {
         didSet {
             scrollView.delegate = self
@@ -51,7 +28,8 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             scrollView.maximumZoomScale = 10.0
         }
     }
-
+    @IBOutlet var aspectRatioBttns: [UIButton]?
+    
     var originalImg: UIImage?
     var croppedImage: UIImage?
     var rec: CGRect!
@@ -71,18 +49,20 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let buttons = [doneBttn, cancelBttn, cropBttn]
-        for button in buttons {
-            button?.layer.cornerRadius = 15
+        for button in aspectRatioBttns! {
+            button.layer.cornerRadius = 15
         }
         originalImg = UIImage(named: "Slika")
         imageHolder.image = originalImg
         imageHolder.layer.borderWidth = 1
         imageHolder.layer.borderColor = UIColor.darkGray.cgColor
         imageHolder.layer.addSublayer(shapeLayer)
+//        let frameCalc = frame(for: originalImg!, inImageViewAspectFit: scrollView)
         
         // Create a view filling the imageView.
         overlay = UIView(frame: scrollView.frame)
+//        overlay!.center = scrollView.center
+//        imageHolder.center = scrollView.center
         
         // Set a semi-transparent, black background.
         overlay!.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
@@ -135,6 +115,81 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return imageHolder
+    }
+    
+    @IBAction func aspectRatioBttnsPressed(_ sender: Any) {
+        guard let button = sender as? UIButton else {
+            return
+        }
+        let imgSize = frame(for: originalImg!, inImageViewAspectFit: scrollView)
+        var toRect: CGRect?
+        switch button.tag {
+        case 0:
+            if imgSize.height > imgSize.width {
+                let cropSize = calculateAspectRatio(width: 1, height: 1, biggerSide: imgSize.height, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
+            } else {
+                let cropSize = calculateAspectRatio(width: 1, height: 1, biggerSide: imgSize.width, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
+            }
+//            croppedImage = cropImage(image: originalImg!, toRect: <#T##CGRect#>)
+        case 1:
+            if imgSize.height > imgSize.width {
+                let cropSize = calculateAspectRatio(width: 16, height: 9, biggerSide: imgSize.height, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
+            } else {
+                let cropSize = calculateAspectRatio(width: 16, height: 9, biggerSide: imgSize.width, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
+            }
+        case 2:
+            if imgSize.height > imgSize.width {
+                let cropSize = calculateAspectRatio(width: 4, height: 3, biggerSide: imgSize.height, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
+            } else {
+                let cropSize = calculateAspectRatio(width: 4, height: 3, biggerSide: imgSize.width, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
+            }
+        case 3:
+            if imgSize.height > imgSize.width {
+                let cropSize = calculateAspectRatio(width: 2, height: 3, biggerSide: imgSize.height, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
+            } else {
+                let cropSize = calculateAspectRatio(width: 2, height: 3, biggerSide: imgSize.width, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
+                
+            }
+        default:
+            print("try again")
+            return
+        }
+        croppedImage = cropImage(image: originalImg!, toRect: toRect!)
+        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
+            self.imageHolder.alpha = 0
+        }, completion: { (finished: Bool) in
+            self.imageHolder.image = self.croppedImage
+        })
+        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
+            self.imageHolder.alpha = 1
+        })
+        
+    }
+    
+    func calculateAspectRatio(width: Int, height: Int, biggerSide: CGFloat, originalImgFrame: CGRect) -> CGFloat {
+        if width > height {
+            let croppedSize = originalImgFrame.height * CGFloat(width) / CGFloat(height)
+            return croppedSize
+        } else if height > width {
+            let croppedSize = originalImgFrame.height * CGFloat(height) / CGFloat(width)
+            return croppedSize
+        } else {
+            if originalImgFrame.height < originalImgFrame.width {
+                let croppedSize = originalImgFrame.height
+                return croppedSize
+            } else {
+                let croppedSize = originalImgFrame.width
+                return croppedSize
+            }
+        }
     }
     
     func cropImage(image: UIImage, toRect: CGRect) -> UIImage? {
@@ -197,20 +252,20 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         self.view.addSubview(overlay!)
     }
     
-//    func frame(for image: UIImage, inImageViewAspectFit imageView: UIImageView) -> CGRect {
-//        let imageRatio = (image.size.width / image.size.height)
-//        let viewRatio = imageView.frame.size.width / imageView.frame.size.height
-//        if imageRatio < viewRatio {
-//            let scale = imageView.frame.size.height / image.size.height
-//            let width = scale * image.size.width
-//            let topLeftX = (imageView.frame.size.width - width) * 0.5
-//            return CGRect(x: topLeftX, y: 0, width: width, height: imageView.frame.size.height)
-//        } else {
-//            let scale = imageView.frame.size.width / image.size.width
-//            let height = scale * image.size.height
-//            let topLeftY = (imageView.frame.size.height - height) * 0.5
-//            return CGRect(x: 0.0, y: topLeftY, width: imageView.frame.size.width, height: height)
-//        }
-//    }
+    func frame(for image: UIImage, inImageViewAspectFit imageView: UIScrollView) -> CGRect {
+        let imageRatio = (image.size.width / image.size.height)
+        let viewRatio = imageView.frame.size.width / imageView.frame.size.height
+        if imageRatio < viewRatio {
+            let scale = imageView.frame.size.height / image.size.height
+            let width = scale * image.size.width
+            let topLeftX = (imageView.frame.size.width - width) * 0.5
+            return CGRect(x: topLeftX, y: 0, width: width, height: imageView.frame.size.height)
+        } else {
+            let scale = imageView.frame.size.width / image.size.width
+            let height = scale * image.size.height
+            let topLeftY = (imageView.frame.size.height - height) * 0.5
+            return CGRect(x: 0.0, y: topLeftY, width: imageView.frame.size.width, height: height)
+        }
+    }
 }
 
