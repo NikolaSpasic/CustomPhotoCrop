@@ -57,12 +57,9 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         imageHolder.layer.borderWidth = 1
         imageHolder.layer.borderColor = UIColor.darkGray.cgColor
         imageHolder.layer.addSublayer(shapeLayer)
-//        let frameCalc = frame(for: originalImg!, inImageViewAspectFit: scrollView)
         
         // Create a view filling the imageView.
         overlay = UIView(frame: scrollView.frame)
-//        overlay!.center = scrollView.center
-//        imageHolder.center = scrollView.center
         
         // Set a semi-transparent, black background.
         overlay!.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
@@ -101,7 +98,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
     @IBAction func cropBttnPressed(_ sender: Any) {
         
-//        let rect = CGRect(origin: CGPoint(x: 0, y: 0), size: rec.size)
         croppedImage = cropImage(image: originalImg!, toRect: rec)
         UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
             self.imageHolder.alpha = 0
@@ -118,6 +114,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     @IBAction func aspectRatioBttnsPressed(_ sender: Any) {
+        clear()
         guard let button = sender as? UIButton else {
             return
         }
@@ -171,6 +168,9 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
             self.imageHolder.alpha = 1
         })
+        let croppedImgFrame = frame(for: croppedImage!, inImageViewAspectFit: scrollView)
+        let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
+        updatePath(from: croppedImgFrame.origin, to: lastPoint)
         
     }
     
@@ -201,42 +201,12 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         return UIImage(cgImage: croppedCGImage)
     }
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        clear()
-        startPoint = touches.first?.location(in: scrollView)
-    }
-    
     func clear() {
         imageHolder.layer.sublayers = nil
         imageHolder.image = UIImage(named: "Slika")
         imageHolder.layer.addSublayer(shapeLayer)
         overlay!.alpha = 1
         self.view.addSubview(overlay!)
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let startPoint = startPoint, let touch = touches.first else { return }
-        let point: CGPoint
-
-        if let predictedTouch = event?.predictedTouches(for: touch)?.last {
-            point = predictedTouch.location(in: scrollView)
-        } else {
-            point = touch.location(in: scrollView)
-        }
-        updatePath(from: startPoint, to: point)
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let startPoint = startPoint, let touch = touches.first else { return }
-        let point = touch.location(in: scrollView)
-        updatePath(from: startPoint, to: point)
-        imageHolder.image = imageHolder.snapshot(afterScreenUpdates: true)
-        shapeLayer.path = nil
-    }
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        shapeLayer.path = nil
-        overlay!.removeFromSuperview()
     }
     
     private func updatePath(from startPoint: CGPoint, to point: CGPoint) {
