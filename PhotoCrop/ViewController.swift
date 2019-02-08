@@ -18,6 +18,29 @@ extension UIView {
     }
 }
 
+extension UIImage {
+    func scaleImageToSize(newSize: CGSize) -> UIImage {
+        var scaledImageRect = CGRect.zero
+        
+        let aspectWidth = newSize.width/size.width
+        let aspectheight = newSize.height/size.height
+        
+        let aspectRatio = max(aspectWidth, aspectheight)
+        
+        scaledImageRect.size.width = size.width * aspectRatio;
+        scaledImageRect.size.height = size.height * aspectRatio;
+        scaledImageRect.origin.x = (newSize.width - scaledImageRect.size.width) / 2.0;
+        scaledImageRect.origin.y = (newSize.height - scaledImageRect.size.height) / 2.0;
+        
+        
+        UIGraphicsBeginImageContextWithOptions(newSize, true, 0)
+        draw(in: scaledImageRect)
+        let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return scaledImage!
+    }
+}
+
 class ViewController: UIViewController, UIScrollViewDelegate {
 
     @IBOutlet weak var imageHolder: UIImageView!
@@ -43,7 +66,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }()
     private var startPoint: CGPoint!
     
-    var overlay: UIView?
+    var overlay: PassthroughView?
     var maskLayer: CAShapeLayer?
     var rect: CGRect?
     
@@ -59,7 +82,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         imageHolder.layer.addSublayer(shapeLayer)
         
         // Create a view filling the imageView.
-        overlay = UIView(frame: scrollView.frame)
+        overlay = PassthroughView(frame: scrollView.frame)
         
         // Set a semi-transparent, black background.
         overlay!.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
@@ -90,6 +113,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         }, completion: { (finished: Bool) in
             self.imageHolder.image = self.originalImg
             self.overlay!.removeFromSuperview()
+            self.maskLayer = nil
         })
         UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
             self.imageHolder.alpha = 1
@@ -129,7 +153,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                 let cropSize = calculateAspectRatio(width: 1, height: 1, biggerSide: imgSize.width, originalImgFrame: imgSize)
                 toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
             }
-//            croppedImage = cropImage(image: originalImg!, toRect: <#T##CGRect#>)
         case 1:
             if imgSize.height > imgSize.width {
                 let cropSize = calculateAspectRatio(width: 16, height: 9, biggerSide: imgSize.height, originalImgFrame: imgSize)
@@ -159,19 +182,21 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             print("try again")
             return
         }
-        croppedImage = cropImage(image: originalImg!, toRect: toRect!)
-        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
-            self.imageHolder.alpha = 0
-        }, completion: { (finished: Bool) in
-            self.imageHolder.image = self.croppedImage
-        })
-        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
-            self.imageHolder.alpha = 1
-        })
-        let croppedImgFrame = frame(for: croppedImage!, inImageViewAspectFit: scrollView)
+        let croppedImageRatio = cropImage(image: originalImg!, toRect: toRect!)
+//        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
+//            self.imageHolder.alpha = 0
+//        }, completion: { (finished: Bool) in
+//            self.imageHolder.image = self.croppedImage
+//        })
+//        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
+//            self.imageHolder.alpha = 1
+//        })
+        let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
         let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
         updatePath(from: croppedImgFrame.origin, to: lastPoint)
-        
+        let scaledImg = originalImg?.scaleImageToSize(newSize: croppedImgFrame.size)
+        imageHolder.image = scaledImg
+        croppedImage = scaledImg
     }
     
     func calculateAspectRatio(width: Int, height: Int, biggerSide: CGFloat, originalImgFrame: CGRect) -> CGFloat {
@@ -236,6 +261,13 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             let topLeftY = (imageView.frame.size.height - height) * 0.5
             return CGRect(x: 0.0, y: topLeftY, width: imageView.frame.size.width, height: height)
         }
+    }
+}
+
+class PassthroughView: UIView {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let view = super.hitTest(point, with: event)
+        return view == self ? nil : view
     }
 }
 
