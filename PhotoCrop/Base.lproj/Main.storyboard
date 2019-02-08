@@ -80,11 +80,11 @@
                                     <constraint firstAttribute="bottom" secondItem="Rax-xq-oVQ" secondAttribute="bottom" id="ywO-EH-1kL"/>
                                 </constraints>
                             </scrollView>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="41" translatesAutoresizingMaskIntoConstraints="NO" id="SSN-Pw-dVW">
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="SSN-Pw-dVW">
                                 <rect key="frame" x="15" y="121.66666666666669" width="345" height="57"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HQU-af-sSf">
-                                        <rect key="frame" x="0.0" y="0.0" width="55.666666666666664" height="57"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="53" height="57"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="1:1">
@@ -95,7 +95,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YAw-fz-wPe">
-                                        <rect key="frame" x="96.666666666666671" y="0.0" width="55.333333333333329" height="57"/>
+                                        <rect key="frame" x="73" y="0.0" width="53" height="57"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="16:9">
@@ -106,7 +106,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SYL-V4-XS3">
-                                        <rect key="frame" x="193" y="0.0" width="55.666666666666657" height="57"/>
+                                        <rect key="frame" x="146" y="0.0" width="53" height="57"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="4:3">
@@ -117,7 +117,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9IN-zG-DZV">
-                                        <rect key="frame" x="289.66666666666669" y="0.0" width="55.333333333333314" height="57"/>
+                                        <rect key="frame" x="219" y="0.0" width="53" height="57"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="2:3">
@@ -125,6 +125,17 @@
                                         </state>
                                         <connections>
                                             <action selector="aspectRatioBttnsPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="LC5-eC-FHB"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BLn-nt-tqu">
+                                        <rect key="frame" x="292" y="0.0" width="53" height="57"/>
+                                        <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                        <state key="normal" title="3:4">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="aspectRatioBttnsPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="atE-Ui-KEd"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -161,6 +172,7 @@
                         <outletCollection property="aspectRatioBttns" destination="gDn-bY-5kL" collectionClass="NSMutableArray" id="6XL-WM-CDJ"/>
                         <outletCollection property="aspectRatioBttns" destination="O1D-7b-vry" collectionClass="NSMutableArray" id="SWj-b9-8o1"/>
                         <outletCollection property="aspectRatioBttns" destination="Wj5-tJ-NOS" collectionClass="NSMutableArray" id="Bk5-89-WVU"/>
+                        <outletCollection property="aspectRatioBttns" destination="BLn-nt-tqu" collectionClass="NSMutableArray" id="oht-Ru-dv8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

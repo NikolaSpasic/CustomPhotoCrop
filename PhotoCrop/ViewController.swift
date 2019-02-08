@@ -79,11 +79,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         imageHolder.image = originalImg
         imageHolder.layer.borderWidth = 1
         imageHolder.layer.borderColor = UIColor.darkGray.cgColor
-        imageHolder.layer.addSublayer(shapeLayer)
         
         // Create a view filling the imageView.
         overlay = PassthroughView(frame: scrollView.frame)
-        
+        overlay!.layer.addSublayer(shapeLayer)
         // Set a semi-transparent, black background.
         overlay!.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
         
@@ -107,30 +106,31 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     @IBAction func cancelBttnPressed(_ sender: Any) {
-        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
-            self.imageHolder.alpha = 0
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [], animations: {
             self.overlay!.alpha = 0
         }, completion: { (finished: Bool) in
             self.imageHolder.image = self.originalImg
             self.overlay!.removeFromSuperview()
-            self.maskLayer = nil
-        })
-        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
-            self.imageHolder.alpha = 1
+            self.maskLayer?.isHidden = true
+            self.shapeLayer.isHidden = true
+            UIView.animate(withDuration: 0.2, delay: 0.0, options: [], animations: {
+                self.scrollView.setZoomScale(0.0, animated: true)
+            })
         })
     }
     
     @IBAction func cropBttnPressed(_ sender: Any) {
         
         croppedImage = cropImage(image: originalImg!, toRect: rec)
-        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [], animations: {
             self.imageHolder.alpha = 0
         }, completion: { (finished: Bool) in
             self.imageHolder.image = self.croppedImage
+            UIView.animate(withDuration: 0.2, delay: 0.0, options: [], animations: {
+                self.imageHolder.alpha = 1
+            })
         })
-        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
-            self.imageHolder.alpha = 1
-        })
+       
     }
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
@@ -178,25 +178,34 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                 toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
                 
             }
+        case 4:
+            if imgSize.height > imgSize.width {
+                let cropSize = calculateAspectRatio(width: 3, height: 4, biggerSide: imgSize.height, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
+            } else {
+                let cropSize = calculateAspectRatio(width: 3, height: 4, biggerSide: imgSize.width, originalImgFrame: imgSize)
+                toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
+            }
         default:
             print("try again")
             return
         }
         let croppedImageRatio = cropImage(image: originalImg!, toRect: toRect!)
-//        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
-//            self.imageHolder.alpha = 0
-//        }, completion: { (finished: Bool) in
-//            self.imageHolder.image = self.croppedImage
-//        })
-//        UIView.animate(withDuration: 0.33, delay: 0.0, options: [], animations: {
-//            self.imageHolder.alpha = 1
-//        })
+
         let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
         let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
         updatePath(from: croppedImgFrame.origin, to: lastPoint)
         let scaledImg = originalImg?.scaleImageToSize(newSize: croppedImgFrame.size)
-        imageHolder.image = scaledImg
         croppedImage = scaledImg
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.transitionFlipFromTop], animations: {
+            self.imageHolder.alpha = 0
+        }, completion: { (finished: Bool) in
+            self.imageHolder.image = scaledImg
+            UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseIn], animations: {
+                self.imageHolder.image = scaledImg
+                self.imageHolder.alpha = 1
+            })
+        })
     }
     
     func calculateAspectRatio(width: Int, height: Int, biggerSide: CGFloat, originalImgFrame: CGRect) -> CGFloat {
@@ -204,7 +213,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             let croppedSize = originalImgFrame.height * CGFloat(width) / CGFloat(height)
             return croppedSize
         } else if height > width {
-            let croppedSize = originalImgFrame.height * CGFloat(height) / CGFloat(width)
+            let croppedSize = originalImgFrame.height * CGFloat(width) / CGFloat(height)
             return croppedSize
         } else {
             if originalImgFrame.height < originalImgFrame.width {
@@ -218,8 +227,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     func cropImage(image: UIImage, toRect: CGRect) -> UIImage? {
-        // Cropping is available trhough CGGraphics
-        print("rect \(toRect)")
         let cgImage :CGImage! = image.cgImage
         let croppedCGImage: CGImage! = cgImage.cropping(to: toRect)
         
@@ -228,13 +235,15 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
     func clear() {
         imageHolder.layer.sublayers = nil
-        imageHolder.image = UIImage(named: "Slika")
-        imageHolder.layer.addSublayer(shapeLayer)
+//        imageHolder.image = UIImage(named: "Slika")
+        overlay!.layer.addSublayer(shapeLayer)
         overlay!.alpha = 1
         self.view.addSubview(overlay!)
     }
     
     private func updatePath(from startPoint: CGPoint, to point: CGPoint) {
+        maskLayer?.isHidden = false
+        shapeLayer.isHidden = false
         let size = CGSize(width: point.x - startPoint.x, height: point.y - startPoint.y)
         rec = CGRect(origin: startPoint, size: size)
         shapeLayer.path = UIBezierPath(rect: rec).cgPath
