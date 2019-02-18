@@ -69,7 +69,8 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     var overlay: PassthroughView?
     var maskLayer: CAShapeLayer?
     var rect: CGRect?
-    var top: CGFloat?
+    var zummmm: CGFloat?
+    var originalInset: UIEdgeInsets?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -78,8 +79,9 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         }
         originalImg = UIImage(named: "Slika")
         imageHolder.image = originalImg
-        imageHolder.layer.borderWidth = 1
-        imageHolder.layer.borderColor = UIColor.darkGray.cgColor
+        
+        scrollView.layer.borderWidth = 1
+        scrollView.layer.borderColor = UIColor.darkGray.cgColor
         
         // Create a view filling the imageView.
         overlay = PassthroughView(frame: scrollView.frame)
@@ -97,6 +99,9 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         
         // Add the view so it is visible.
         self.view.addSubview(overlay!)
+        scrollView.bounces = false
+        scrollView.isUserInteractionEnabled = false
+        originalInset = scrollView.contentInset
     }
 
     @IBAction func doneBttnPressed(_ sender: Any) {
@@ -143,6 +148,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         guard let button = sender as? UIButton else {
             return
         }
+        scrollView.isUserInteractionEnabled = true
         let imgSize = frame(for: originalImg!, inImageViewAspectFit: scrollView)
         var toRect: CGRect?
         var wButton = 0
@@ -167,12 +173,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             print("try again")
             return
         }
-        
+        let cropSize = calculateAspectRatio(width: wButton, height: hButton, originalImgFrame: imgSize)
         if imgSize.height > imgSize.width {
-            let cropSize = calculateAspectRatio(width: wButton, height: hButton, biggerSide: imgSize.height, originalImgFrame: imgSize)
             toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
         } else {
-            let cropSize = calculateAspectRatio(width: wButton, height: hButton, biggerSide: imgSize.width, originalImgFrame: imgSize)
             toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
         }
         
@@ -184,19 +188,25 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         let scaledImg = originalImg?.scaleImageToSize(newSize: croppedImgFrame.size)
         croppedImage = scaledImg
         let imgframeafterzooming = framed(for: originalImg!, inImageViewAspectFit: imageHolder!)
-        print("minyy: \(rec.minY), maxy: \(rec.maxY)")
-        if rec.height > imgframeafterzooming.height {
-            let zoomScale = rec.height / imgframeafterzooming.height
-            scrollView.setZoomScale(zoomScale, animated: true)
-        } else if rec.height > imgframeafterzooming.height {
-            let zoomScale = rec.height / imgframeafterzooming.height
-            scrollView.setZoomScale(zoomScale, animated: true)
-        }
-        top = scrollView.contentOffset.y
-        scrollView.contentInset = UIEdgeInsets(top: -top!, left: rec.minX, bottom: -top!, right: rec.minX) //safely unwrap top everywhere
+        var zoomScale: CGFloat = 0.0
+        zoomScale = rec.height / imgframeafterzooming.height
+        scrollView.setZoomScale(zoomScale, animated: true)
+        zummmm = scrollView.zoomScale  //rename zummm
     }
     
-    func calculateAspectRatio(width: Int, height: Int, biggerSide: CGFloat, originalImgFrame: CGRect) -> CGFloat {
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
+        let point = imgframe.origin.y - rec.minY //rename point
+        scrollView.contentInset = UIEdgeInsets(top: -point, left: rec.minX, bottom: -point, right: rec.minX)
+        
+        if imgframe.height < rec.height {
+            let distance = (rec.height - imgframe.height) / 2    //rename distance
+            let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
+            scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
+        }
+    }
+    
+    func calculateAspectRatio(width: Int, height: Int, originalImgFrame: CGRect) -> CGFloat {
         if width > height {
             let croppedSize = originalImgFrame.height * CGFloat(width) / CGFloat(height)
             return croppedSize
@@ -238,6 +248,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         let path = UIBezierPath(rect: overlay!.bounds)
         // Create the path.
         path.append(UIBezierPath(rect: rec))
+        print(rec)
         maskLayer!.path = path.cgPath
         maskLayer!.fillRule = CAShapeLayerFillRule.evenOdd
         UIView.animate(withDuration: 0.3, delay: 0.0, options: [.transitionFlipFromTop], animations: {
