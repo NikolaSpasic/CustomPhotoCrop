@@ -8,39 +8,6 @@
 
 import UIKit
 
-extension UIView {
-    func snapshot(afterScreenUpdates: Bool = false) -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(bounds.size, isOpaque, 0)
-        drawHierarchy(in: bounds, afterScreenUpdates: afterScreenUpdates)
-        let image = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        return image
-    }
-}
-
-extension UIImage {
-    func scaleImageToSize(newSize: CGSize) -> UIImage {
-        var scaledImageRect = CGRect.zero
-        
-        let aspectWidth = newSize.width/size.width
-        let aspectheight = newSize.height/size.height
-        
-        let aspectRatio = max(aspectWidth, aspectheight)
-        
-        scaledImageRect.size.width = size.width * aspectRatio;
-        scaledImageRect.size.height = size.height * aspectRatio;
-        scaledImageRect.origin.x = (newSize.width - scaledImageRect.size.width) / 2.0;
-        scaledImageRect.origin.y = (newSize.height - scaledImageRect.size.height) / 2.0;
-        
-        
-        UIGraphicsBeginImageContextWithOptions(newSize, true, 0)
-        draw(in: scaledImageRect)
-        let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return scaledImage!
-    }
-}
-
 class ViewController: UIViewController, UIScrollViewDelegate {
 
     @IBOutlet weak var imageHolder: UIImageView!
@@ -71,6 +38,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     var rect: CGRect?
     var zummmm: CGFloat?
     var originalInset: UIEdgeInsets?
+    var rectToCrop: CGRect?
+    
+    var wButton = 0
+    var hButton = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -80,8 +51,20 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         originalImg = UIImage(named: "Slika")
         imageHolder.image = originalImg
         
+        let backgroundImage = UIImageView(frame: UIScreen.main.bounds)              //Background view
+        backgroundImage.image = UIImage(named: "Slika")
+        backgroundImage.contentMode = .scaleAspectFill
+        self.view.insertSubview(backgroundImage, at: 0)
+        
+        let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)               //Background Blur
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = view.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        backgroundImage.addSubview(blurEffectView)
+        
+        
         scrollView.layer.borderWidth = 1
-        scrollView.layer.borderColor = UIColor.darkGray.cgColor
+        scrollView.layer.borderColor = UIColor.black.cgColor
         
         // Create a view filling the imageView.
         overlay = PassthroughView(frame: scrollView.frame)
@@ -103,6 +86,8 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         scrollView.isUserInteractionEnabled = false
         originalInset = scrollView.contentInset
     }
+    
+    //MARK: Button Actions
 
     @IBAction func doneBttnPressed(_ sender: Any) {
         if let imgDidCrop = croppedImage {
@@ -126,24 +111,11 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     @IBAction func cropBttnPressed(_ sender: Any) {
-        
-        croppedImage = cropImage(image: originalImg!, toRect: rec)
-        UIView.animate(withDuration: 0.2, delay: 0.0, options: [], animations: {
-            self.imageHolder.alpha = 0
-        }, completion: { (finished: Bool) in
-            self.imageHolder.image = self.croppedImage
-            UIView.animate(withDuration: 0.2, delay: 0.0, options: [], animations: {
-                self.imageHolder.alpha = 1
-            })
-        })
        
     }
     
-    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return imageHolder
-    }
-    
     @IBAction func aspectRatioBttnsPressed(_ sender: Any) {
+        scrollView.setZoomScale(1.0, animated: true)
         clear()
         guard let button = sender as? UIButton else {
             return
@@ -151,8 +123,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         scrollView.isUserInteractionEnabled = true
         let imgSize = frame(for: originalImg!, inImageViewAspectFit: scrollView)
         var toRect: CGRect?
-        var wButton = 0
-        var hButton = 0
+        
         switch button.tag {
         case 0:
             wButton = 1
@@ -179,7 +150,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         } else {
             toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
         }
-        
         let croppedImageRatio = cropImage(image: originalImg!, toRect: toRect!)
 
         let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
@@ -194,6 +164,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         zummmm = scrollView.zoomScale  //rename zummm
     }
     
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return imageHolder
+    }
+    
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
         let point = imgframe.origin.y - rec.minY //rename point
@@ -202,8 +176,13 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         if imgframe.height < rec.height {
             let distance = (rec.height - imgframe.height) / 2    //rename distance
             let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
-            scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
+            if rec.width > rec.height {
+                scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
+            } else {
+                scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
+            }
         }
+        croppedImage = captureVisibleRect()
     }
     
     func calculateAspectRatio(width: Int, height: Int, originalImgFrame: CGRect) -> CGFloat {
@@ -248,7 +227,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         let path = UIBezierPath(rect: overlay!.bounds)
         // Create the path.
         path.append(UIBezierPath(rect: rec))
-        print(rec)
         maskLayer!.path = path.cgPath
         maskLayer!.fillRule = CAShapeLayerFillRule.evenOdd
         UIView.animate(withDuration: 0.3, delay: 0.0, options: [.transitionFlipFromTop], animations: {
@@ -261,7 +239,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         })
     }
     
-    func frame(for image: UIImage, inImageViewAspectFit imageView: UIScrollView) -> CGRect {
+    func frame(for image: UIImage, inImageViewAspectFit imageView: UIScrollView) -> CGRect { //and scrollview vars
         let imageRatio = (image.size.width / image.size.height)
         let viewRatio = imageView.frame.size.width / imageView.frame.size.height
         if imageRatio < viewRatio {
@@ -276,7 +254,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             return CGRect(x: 0.0, y: topLeftY, width: imageView.frame.size.width, height: height)
         }
     }
-    func framed(for image: UIImage, inImageViewAspectFit imageView: UIImageView) -> CGRect {
+    func framed(for image: UIImage, inImageViewAspectFit imageView: UIImageView) -> CGRect {                //rename framed
         let imageRatio = (image.size.width / image.size.height)
         let viewRatio = imageView.frame.size.width / imageView.frame.size.height
         if imageRatio < viewRatio {
@@ -290,9 +268,35 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             let topLeftY = (imageView.frame.size.height - height) * 0.5
             return CGRect(x: 0.0, y: topLeftY, width: imageView.frame.size.width, height: height)
         }
+    }
+    
+    func captureVisibleRect() -> UIImage{
+        
+        var croprect = CGRect.zero
+        let xOffset = (originalImg!.size.width) / scrollView.contentSize.width;
+        let yOffset = (originalImg!.size.height) / scrollView.contentSize.height;
+        
+        croprect.origin.x = scrollView.contentOffset.x * xOffset;
+        croprect.origin.y = scrollView.contentOffset.y * yOffset;
+       
+        
+        let normalizedWidth = (scrollView?.frame.width)! / (scrollView?.contentSize.width)!
+        let normalizedHeight = (scrollView?.frame.height)! / (scrollView?.contentSize.height)!
+        print("check dimensions 1: \(croprect)")
+        croprect.size.width = rec.width * scrollView.zoomScale//* normalizedWidth
+        croprect.size.height = rec.height * scrollView.zoomScale//normalizedHeight
+        print("normalized width \(normalizedWidth)")
+//        let toCropImage = scrollView.imageView.image?.fixImageOrientation()
+        let cr: CGImage? = originalImg?.cgImage?.cropping(to: croprect)
+        if let cro = cr {
+            let cropped = UIImage(cgImage: cro)
+            return cropped
+        } else {
+            return originalImg!
+        }
+        
     }
 }
-
 class PassthroughView: UIView {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let view = super.hitTest(point, with: event)
