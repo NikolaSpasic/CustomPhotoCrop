@@ -35,10 +35,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
     var overlay: PassthroughView?
     var maskLayer: CAShapeLayer?
-    var rect: CGRect?
-    var zummmm: CGFloat?
-    var originalInset: UIEdgeInsets?
-    var rectToCrop: CGRect?
     
     var wButton = 0
     var hButton = 0
@@ -84,7 +80,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         self.view.addSubview(overlay!)
         scrollView.bounces = false
         scrollView.isUserInteractionEnabled = false
-        originalInset = scrollView.contentInset
     }
     
     //MARK: Button Actions
@@ -155,13 +150,9 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
         let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
         updatePath(from: croppedImgFrame.origin, to: lastPoint)
-        let scaledImg = originalImg?.scaleImageToSize(newSize: croppedImgFrame.size)
-        croppedImage = scaledImg
         let imgframeafterzooming = framed(for: originalImg!, inImageViewAspectFit: imageHolder!)
-        var zoomScale: CGFloat = 0.0
-        zoomScale = rec.height / imgframeafterzooming.height
+        let zoomScale = rec.height / imgframeafterzooming.height
         scrollView.setZoomScale(zoomScale, animated: true)
-        zummmm = scrollView.zoomScale  //rename zummm
     }
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
@@ -182,6 +173,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                 scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
             }
         }
+        croppedImage = captureVisibleRect()
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         croppedImage = captureVisibleRect()
     }
     
@@ -272,28 +267,61 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     
     func captureVisibleRect() -> UIImage{
         
-        var croprect = CGRect.zero
-        let xOffset = (originalImg!.size.width) / scrollView.contentSize.width;
-        let yOffset = (originalImg!.size.height) / scrollView.contentSize.height;
         
-        croprect.origin.x = scrollView.contentOffset.x * xOffset;
-        croprect.origin.y = scrollView.contentOffset.y * yOffset;
-       
         
-        let normalizedWidth = (scrollView?.frame.width)! / (scrollView?.contentSize.width)!
-        let normalizedHeight = (scrollView?.frame.height)! / (scrollView?.contentSize.height)!
-        print("check dimensions 1: \(croprect)")
-        croprect.size.width = rec.width * scrollView.zoomScale//* normalizedWidth
-        croprect.size.height = rec.height * scrollView.zoomScale//normalizedHeight
-        print("normalized width \(normalizedWidth)")
-//        let toCropImage = scrollView.imageView.image?.fixImageOrientation()
-        let cr: CGImage? = originalImg?.cgImage?.cropping(to: croprect)
-        if let cro = cr {
-            let cropped = UIImage(cgImage: cro)
-            return cropped
-        } else {
-            return originalImg!
-        }
+//        UIGraphicsBeginImageContextWithOptions(CGSize(width: rec.width, height: rec.height), true, 0)
+//
+//        imageHolder.layer.render(in: UIGraphicsGetCurrentContext()!)
+//        let image = UIGraphicsGetImageFromCurrentImageContext()
+//        UIGraphicsEndImageContext()
+//
+//        if let img = image {
+//            return img
+//        } else {
+//            return originalImg!
+//        }
+        
+        
+        
+        croppedImage = originalImg!.scaleImageToSize(newSize: rec.size, scale: scrollView.zoomScale)
+        
+        return croppedImage!
+        
+//        var scale = 1.0 / scrollView.zoomScale
+//        var visibleRect: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0)
+//        visibleRect.origin.x = scrollView.contentOffset.x * scale
+//        visibleRect.origin.y = scrollView.contentOffset.y * scale
+//
+//        visibleRect.size.width = scrollView.bounds.width * scale
+//        visibleRect.size.height = scrollView.bounds.height * scale
+//
+//
+//
+        
+        
+//        var croprect = CGRect.zero
+//        let xOffset = (originalImg!.size.width) / scrollView.contentSize.width;
+//        let yOffset = (originalImg!.size.height) / scrollView.contentSize.height;
+//
+//        croprect.origin.x = scrollView.contentOffset.x * xOffset;
+//        croprect.origin.y = scrollView.contentOffset.y * yOffset;
+//
+//
+//        let normalizedWidth = (scrollView?.frame.width)! / (scrollView?.contentSize.width)!
+//        let normalizedHeight = (scrollView?.frame.height)! / (scrollView?.contentSize.height)!
+//
+//        croprect.size.width = rec.width * scale//scrollView.zoomScale//* normalizedWidth
+//        croprect.size.height = rec.height * scale//scrollView.zoomScale//normalizedHeight
+//
+//
+////        let toCropImage = scrollView.imageView.image?.fixImageOrientation()
+//        let cr: CGImage? = originalImg?.cgImage?.cropping(to: croprect)
+//        if let cro = cr {
+//            let cropped = UIImage(cgImage: cro)
+//            return cropped
+//        } else {
+//            return originalImg!
+//        }
         
     }
 }
