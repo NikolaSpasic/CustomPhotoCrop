@@ -177,10 +177,10 @@ class ViewController: UIViewController, UIScrollViewDelegate {
 //        croppedImage = originalImg!.scaleImageToSize(newSize: scrollView.bounds.size, offset: scrollView.contentOffset, scrollViewFrame: scrollView.frame)
     }
     
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        croppedImage = screenshot()
-//        croppedImage = originalImg!.scaleImageToSize(newSize: scrollView.bounds.size, offset: scrollView.contentOffset, scrollViewFrame: scrollView.frame)
-    }
+//    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+//        croppedImage = screenshot()
+////        croppedImage = originalImg!.scaleImageToSize(newSize: scrollView.bounds.size, offset: scrollView.contentOffset, scrollViewFrame: scrollView.frame)
+//    }
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
         let point = imgframe.origin.y - rec.minY //rename point
@@ -194,6 +194,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                 scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
             }
         }
+        print(scrollView.zoomScale)
     }
     
     func calculateAspectRatio(width: Int, height: Int, originalImgFrame: CGRect) -> CGFloat {
@@ -288,15 +289,67 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     func screenshot() -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(self.rec.size, true, 0)
-        let offset = self.scrollView.contentOffset
-        let thisContext = UIGraphicsGetCurrentContext()
-        thisContext?.translateBy(x: -offset.x - ((scrollView.frame.width - rec.width) / 2), y: -offset.y - ((scrollView.frame.height - rec.height) / 2))
-        self.scrollView.layer.render(in: thisContext!)
-        let visibleScrollViewImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return visibleScrollViewImage!
+//        UIGraphicsBeginImageContextWithOptions(self.rec.size, true, 0)
+//        let offset = self.scrollView.contentOffset
+//        let thisContext = UIGraphicsGetCurrentContext()
+//        thisContext?.translateBy(x: -offset.x/*- ((scrollView.frame.width - rec.width) / 2)*/, y: -offset.y/*- ((scrollView.frame.height - rec.height) / 2)*/)
+//        self.scrollView.layer.render(in: thisContext!)
+//        let visibleScrollViewImage = UIGraphicsGetImageFromCurrentImageContext()
+//        UIGraphicsEndImageContext()
+        
+        var visibleRectes = CGRect(origin: scrollView.contentOffset, size: scrollView.bounds.size)
+        let theScale = 1 / scrollView.zoomScale     // probaj 0.5
+//        visibleRectes.origin.x *= theScale
+//        visibleRectes.origin.y *= theScale
+        let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
+        visibleRectes.origin.x = (scrollView.contentOffset.x - ((imageHolder.frame.width - imgframe.width) / 2)) * (originalImg!.size.width / (imgframe.width))// * theScale//(imgframe.width - scrollView.frame.width) * theScale
+        visibleRectes.origin.y = (scrollView.contentOffset.y - ((imageHolder.frame.height - imgframe.height) / 2)) * (originalImg!.size.height / imgframe.height)// * theScale//(imgframe.height - scrollView.frame.height) * theScale
+        visibleRectes.size.width = rec.width * (originalImg!.size.width / imgframe.width)
+        visibleRectes.size.height = rec.height * (originalImg!.size.height / imgframe.height)
+//        print("w and h: \(visibleRectes.size.width), \(visibleRectes.size.height), \(imageHolder.frame.width / rec.width), offset: \(visibleRectes.origin), \(scrollView.contentOffset)")
+        print("w and h: \(visibleRectes.size.width), \(visibleRectes.size.height), \(imageHolder.frame.width / rec.width), offset: \(visibleRectes.origin), \(scrollView.contentOffset)")
+        let imageRef = originalImg!.cgImage!.cropping(to: visibleRectes)//originalImg!.cgImage!.cropping(to: rect)
+        let croppedImage = UIImage(cgImage: imageRef!)
+        
+        
+        return croppedImage
     }
+    
+    
+    
+    
+    
+//
+//    func tappedCrop() {
+//        print("tapped crop")
+//        
+//        var imgX: CGFloat = 0
+//        if scrollView.contentOffset.x > 0 {
+//            imgX = scrollView.contentOffset.x / scrollView.zoomScale
+//        }
+//
+//        let gapToTheHole = view.frame.height/2 - rec.height/2
+//        var imgY: CGFloat = 0
+//        if scrollView.contentOffset.y + gapToTheHole > 0 {
+//            imgY = (scrollView.contentOffset.y + gapToTheHole) / scrollView.zoomScale
+//        }
+//
+//        let imgW = holeRect.width  / scrollView.zoomScale
+//        let imgH = holeRect.height  / scrollView.zoomScale
+//
+//        print("IMG x: \(imgX) y: \(imgY) w: \(imgW) h: \(imgH)")
+//
+//        let cropRect = CGRect(x: imgX, y: imgY, width: imgW, height: imgH)
+//        let imageRef = img.cgImage!.cropping(to: cropRect)
+//        let croppedImage = UIImage(cgImage: imageRef!)
+//
+//        UIImageWriteToSavedPhotosAlbum(croppedImage, self, #selector(image(image:didFinishSavingWithError:contextInfo:)), nil)
+//
+//        self.dismiss(animated: true, completion: nil)
+//    }
+//
+//
+    
     
     
 //    func croppedImages() -> UIImage {
