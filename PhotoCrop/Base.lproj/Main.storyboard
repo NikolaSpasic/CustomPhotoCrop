@@ -18,19 +18,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gDn-bY-5kL">
-                                <rect key="frame" x="150" y="633.66666666666663" width="75" height="33"/>
-                                <color key="backgroundColor" red="0.1218542588" green="0.37482715709999997" blue="0.50719026550000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <state key="normal" title="Crop">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                </state>
-                                <connections>
-                                    <action selector="cropBttnPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="QKN-q0-iA2"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O1D-7b-vry">
-                                <rect key="frame" x="284" y="633.66666666666663" width="75" height="33"/>
+                                <rect key="frame" x="280" y="633.66666666666663" width="75" height="40"/>
                                 <color key="backgroundColor" red="0.0" green="0.39903714364035087" blue="0.33436129385964913" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <state key="normal" title="Done">
@@ -41,9 +30,10 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wj5-tJ-NOS">
-                                <rect key="frame" x="16" y="633.66666666666663" width="75" height="33"/>
+                                <rect key="frame" x="20" y="633.66666666666663" width="75" height="40"/>
                                 <color key="backgroundColor" red="0.57586348684210531" green="0.19717996162280702" blue="0.22327302631578946" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="lkQ-u4-gbd"/>
                                     <constraint firstAttribute="width" constant="75" id="wCd-JU-8by"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -72,10 +62,10 @@
                                 </constraints>
                             </scrollView>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="SSN-Pw-dVW">
-                                <rect key="frame" x="20" y="137.66666666666666" width="335" height="36"/>
+                                <rect key="frame" x="20" y="123.66666666666669" width="335" height="50"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HQU-af-sSf">
-                                        <rect key="frame" x="0.0" y="0.0" width="51" height="36"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="51" height="50"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="1:1">
@@ -86,7 +76,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YAw-fz-wPe">
-                                        <rect key="frame" x="71" y="0.0" width="51" height="36"/>
+                                        <rect key="frame" x="71" y="0.0" width="51" height="50"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="16:9">
@@ -97,7 +87,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SYL-V4-XS3">
-                                        <rect key="frame" x="142" y="0.0" width="51" height="36"/>
+                                        <rect key="frame" x="142" y="0.0" width="51" height="50"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="4:3">
@@ -108,7 +98,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9IN-zG-DZV">
-                                        <rect key="frame" x="213" y="0.0" width="51" height="36"/>
+                                        <rect key="frame" x="213" y="0.0" width="51" height="50"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="2:3">
@@ -119,7 +109,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BLn-nt-tqu">
-                                        <rect key="frame" x="284" y="0.0" width="51" height="36"/>
+                                        <rect key="frame" x="284" y="0.0" width="51" height="50"/>
                                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                         <state key="normal" title="3:4">
@@ -131,7 +121,7 @@
                                     </button>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="36" id="2Yc-M6-hlt"/>
+                                    <constraint firstAttribute="height" constant="50" id="2Yc-M6-hlt"/>
                                 </constraints>
                             </stackView>
                         </subviews>
@@ -141,15 +131,13 @@
                             <constraint firstItem="ssZ-r1-Fs9" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="7ob-r5-OMJ"/>
                             <constraint firstItem="ssZ-r1-Fs9" firstAttribute="top" secondItem="SSN-Pw-dVW" secondAttribute="bottom" constant="45" id="OqJ-0F-xKc"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="SSN-Pw-dVW" secondAttribute="trailing" constant="20" id="Q5B-AK-GjZ"/>
-                            <constraint firstItem="ssZ-r1-Fs9" firstAttribute="centerX" secondItem="gDn-bY-5kL" secondAttribute="centerX" id="RiC-yG-Quu"/>
-                            <constraint firstItem="O1D-7b-vry" firstAttribute="width" secondItem="gDn-bY-5kL" secondAttribute="width" id="SCR-mn-jYh"/>
-                            <constraint firstItem="gDn-bY-5kL" firstAttribute="top" secondItem="ssZ-r1-Fs9" secondAttribute="bottom" constant="40" id="SVh-VR-hDd"/>
-                            <constraint firstItem="Wj5-tJ-NOS" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="Z4N-fn-0Sy"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="O1D-7b-vry" secondAttribute="trailing" constant="16" id="bLa-6Z-IBp"/>
+                            <constraint firstItem="Wj5-tJ-NOS" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="Z4N-fn-0Sy"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="O1D-7b-vry" secondAttribute="trailing" constant="20" id="bLa-6Z-IBp"/>
                             <constraint firstItem="O1D-7b-vry" firstAttribute="top" secondItem="ssZ-r1-Fs9" secondAttribute="bottom" constant="40" id="dzG-1l-asW"/>
+                            <constraint firstItem="O1D-7b-vry" firstAttribute="width" secondItem="Wj5-tJ-NOS" secondAttribute="width" id="oDA-S2-7MW"/>
                             <constraint firstItem="Wj5-tJ-NOS" firstAttribute="top" secondItem="ssZ-r1-Fs9" secondAttribute="bottom" constant="40" id="oDZ-Ht-3PA"/>
                             <constraint firstItem="ssZ-r1-Fs9" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="qms-4a-oU3"/>
-                            <constraint firstItem="gDn-bY-5kL" firstAttribute="width" secondItem="Wj5-tJ-NOS" secondAttribute="width" id="wAD-gA-lVZ"/>
+                            <constraint firstItem="O1D-7b-vry" firstAttribute="height" secondItem="Wj5-tJ-NOS" secondAttribute="height" id="vjS-aW-DEq"/>
                             <constraint firstItem="ssZ-r1-Fs9" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="waz-ea-izF"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -161,7 +149,6 @@
                         <outletCollection property="aspectRatioBttns" destination="YAw-fz-wPe" collectionClass="NSMutableArray" id="hch-u3-UTD"/>
                         <outletCollection property="aspectRatioBttns" destination="SYL-V4-XS3" collectionClass="NSMutableArray" id="vkn-Hv-8Jc"/>
                         <outletCollection property="aspectRatioBttns" destination="9IN-zG-DZV" collectionClass="NSMutableArray" id="gw5-lG-2ka"/>
-                        <outletCollection property="aspectRatioBttns" destination="gDn-bY-5kL" collectionClass="NSMutableArray" id="6XL-WM-CDJ"/>
                         <outletCollection property="aspectRatioBttns" destination="O1D-7b-vry" collectionClass="NSMutableArray" id="SWj-b9-8o1"/>
                         <outletCollection property="aspectRatioBttns" destination="Wj5-tJ-NOS" collectionClass="NSMutableArray" id="Bk5-89-WVU"/>
                         <outletCollection property="aspectRatioBttns" destination="BLn-nt-tqu" collectionClass="NSMutableArray" id="oht-Ru-dv8"/>
