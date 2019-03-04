@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIScrollViewDelegate {
+class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
 
     @IBOutlet weak var imageHolder: UIImageView!
     @IBOutlet weak var scrollView: UIScrollView! {
@@ -18,7 +18,8 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             scrollView.maximumZoomScale = 10.0
         }
     }
-    @IBOutlet var aspectRatioBttns: [UIButton]?
+    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet weak var doneBttn: UIButton!
     
     var originalImg: UIImage?
     var croppedImage: UIImage?
@@ -36,16 +37,34 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     var overlay: PassthroughView?
     var maskLayer: CAShapeLayer?
     
-    var wButton = 0
-    var hButton = 0
+    var wButton = CGFloat(0.0)
+    var hButton = CGFloat(0.0)
+    var bttnAspectRatios = [AspectRatioBttn]()
+
+    let buttonNames = ["Original", "Facebook post", "Facebook cover", "Twitter", "Pinterest", "LinkedIn post", "Instagram", "Google Plus", "Square", "16:9", "9:16", "4:3", "3:4"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        for button in aspectRatioBttns! {
-            button.layer.cornerRadius = 15
-        }
+        doneBttn.layer.cornerRadius = 15
+        self.collectionView.delegate = self
         originalImg = UIImage(named: "Slika")
         imageHolder.image = originalImg
+        
+        bttnAspectRatios = [
+            AspectRatioBttn(names: "Original", widths: originalImg!.size.width, heights: originalImg!.size.width),
+            AspectRatioBttn(names: "Facebook post", widths: 1.91, heights: 1),
+            AspectRatioBttn(names: "Facebook cover", widths: 16, heights: 9),
+            AspectRatioBttn(names: "Twitter", widths: 16, heights: 9),
+            AspectRatioBttn(names: "Pinterest", widths: 16, heights: 9),
+            AspectRatioBttn(names: "LinkedIn post", widths: 16, heights: 9),
+            AspectRatioBttn(names: "Instagram", widths: 1, heights: 1),
+            AspectRatioBttn(names: "Google Plus", widths: 16, heights: 9),
+            AspectRatioBttn(names: "Square", widths: 1, heights: 1),
+            AspectRatioBttn(names: "16:9", widths: 16, heights: 9),
+            AspectRatioBttn(names: "9:16", widths: 9, heights: 16),
+            AspectRatioBttn(names: "4:3", widths: 4, heights: 3),
+            AspectRatioBttn(names: "3:4", widths: 3, heights: 4)
+        ]
         
         let backgroundImage = UIImageView(frame: UIScreen.main.bounds)              //Background view
         backgroundImage.image = UIImage(named: "Slika")
@@ -83,58 +102,43 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     //MARK: Button Actions
-
     @IBAction func doneBttnPressed(_ sender: Any) {
         if let imgDidCrop = croppedImage {
             UIImageWriteToSavedPhotosAlbum(imgDidCrop, nil, nil, nil)
         }
     }
     
-    @IBAction func cancelBttnPressed(_ sender: Any) {
-        UIView.animate(withDuration: 0.2, delay: 0.0, options: [], animations: {
-            self.overlay!.alpha = 0
-        }, completion: { (finished: Bool) in
-            self.imageHolder.image = self.originalImg
-            self.overlay!.removeFromSuperview()
-            self.maskLayer?.isHidden = true
-            self.shapeLayer.isHidden = true
-            UIView.animate(withDuration: 0.2, delay: 0.0, options: [], animations: {
-                self.scrollView.setZoomScale(0.0, animated: true)
-            })
-        })
-        scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    //MARK: CollectionView
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return bttnAspectRatios.count
     }
     
-    @IBAction func aspectRatioBttnsPressed(_ sender: Any) {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "collectionCell", for: indexPath) as! CollectionViewCell
+        let aspectRatio = bttnAspectRatios[indexPath.row]
+        cell.aspectRatioLabel.text = aspectRatio.name
+        cell.aspectRatioImageView.image = aspectRatio.image
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as! CollectionViewCell
+        let aspectRatio = bttnAspectRatios[indexPath.row]
+        if aspectRatio.name.hasPrefix("Facebook") {
+            cell.aspectRatioImageView.image = UIImage(named: "Facebookactive")
+        } else {
+            cell.aspectRatioImageView.image = UIImage(named: "\(aspectRatio.name)active")
+        }
         scrollView.setZoomScale(1.0, animated: true)
         clear()
-        guard let button = sender as? UIButton else {
-            return
-        }
+        
         scrollView.isUserInteractionEnabled = true
         let imgSize = frame(for: originalImg!, inImageViewAspectFit: scrollView)
         var toRect: CGRect?
+
+        wButton = aspectRatio.width
+        hButton = aspectRatio.height
         
-        switch button.tag {
-        case 0:
-            wButton = 1
-            hButton = 1
-        case 1:
-            wButton = 16
-            hButton = 9
-        case 2:
-            wButton = 4
-            hButton = 3
-        case 3:
-            wButton = 2
-            hButton = 3
-        case 4:
-            wButton = 3
-            hButton = 4
-        default:
-            print("try again")
-            return
-        }
         let cropSize = calculateAspectRatio(width: wButton, height: hButton, originalImgFrame: imgSize)
         if imgSize.height > imgSize.width {
             toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
@@ -142,13 +146,24 @@ class ViewController: UIViewController, UIScrollViewDelegate {
             toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
         }
         let croppedImageRatio = cropImage(image: originalImg!, toRect: toRect!)
-
+        
         let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
         let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
         updatePath(from: croppedImgFrame.origin, to: lastPoint)
         let imgframeafterzooming = framed(for: originalImg!, inImageViewAspectFit: imageHolder!)
         let zoomScale = rec.height / imgframeafterzooming.height
         scrollView.setZoomScale(zoomScale, animated: true)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        if let cell = collectionView.cellForItem(at: indexPath) as? CollectionViewCell {
+            let aspectRatio = bttnAspectRatios[indexPath.row]
+            if aspectRatio.name.hasPrefix("Facebook") {
+                cell.aspectRatioImageView.image = UIImage(named: "Facebook")
+            } else {
+                cell.aspectRatioImageView.image = UIImage(named: "\(aspectRatio.name)")
+            }
+        }
     }
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
@@ -188,16 +203,20 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        croppedImage = cropToSelectedSize()
+        if scrollView != collectionView {
+            croppedImage = cropToSelectedSize()
+        }
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
-            self.croppedImage = self.cropToSelectedSize()
+            if scrollView != collectionView {
+                croppedImage = cropToSelectedSize()
+            }
         }
     }
     
-    func calculateAspectRatio(width: Int, height: Int, originalImgFrame: CGRect) -> CGFloat {
+    func calculateAspectRatio(width: CGFloat, height: CGFloat, originalImgFrame: CGRect) -> CGFloat {
         if width > height {
             let croppedSize = originalImgFrame.height * CGFloat(width) / CGFloat(height)
             return croppedSize
@@ -239,8 +258,8 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         let path = UIBezierPath(rect: overlay!.bounds)
         // Create the path.
         path.append(UIBezierPath(rect: rec))
-        maskLayer!.path = path.cgPath
-        maskLayer!.fillRule = CAShapeLayerFillRule.evenOdd
+        maskLayer?.path = path.cgPath
+        maskLayer?.fillRule = CAShapeLayerFillRule.evenOdd
         UIView.animate(withDuration: 0.3, delay: 0.0, options: [.transitionFlipFromTop], animations: {
             self.overlay?.alpha = 0
         }, completion: { (finished: Bool) in
@@ -283,6 +302,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     func cropToSelectedSize() -> UIImage {
+        print("gets here")
         var visibleRectes = CGRect(origin: scrollView.contentOffset, size: scrollView.bounds.size)
         let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
         let visibleAreaWidthMargin = (scrollView.frame.width - rec.width) / 2           //calculates the selected area
@@ -294,8 +314,7 @@ class ViewController: UIViewController, UIScrollViewDelegate {
         visibleRectes.origin.y = (scrollView.contentOffset.y - ((imageHolder.frame.height - imgframe.height) / 2) + visibleAreaHeightMargin) * ratioOfImgsHeight
         visibleRectes.size.width = rec.width * ratioOfImgsWidth
         visibleRectes.size.height = rec.height * ratioOfImgsHeight
-
-        print("w and h: \(visibleRectes.size.width), \(visibleRectes.size.height), \(imageHolder.frame.width / rec.width), offset: \(visibleAreaWidthMargin), \(visibleAreaHeightMargin)")
+        
         let imageRef = originalImg!.cgImage!.cropping(to: visibleRectes)
         var croppedImage = UIImage(cgImage: imageRef!)
         
@@ -317,7 +336,6 @@ class ViewController: UIViewController, UIScrollViewDelegate {
     }
     
     func drawImageOnCanvas(_ useImage: UIImage, canvasSize: CGSize, canvasColor: UIColor ) -> UIImage {
-        
         let rect = CGRect(origin: .zero, size: canvasSize)
         UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
         
@@ -330,29 +348,41 @@ class ViewController: UIViewController, UIScrollViewDelegate {
                                        y: (canvasSize.height - useImage.size.height) / 2,
                                        width: useImage.size.width,
                                        height: useImage.size.height)
-        
         // get a drawing context
         let context = UIGraphicsGetCurrentContext();
-        
         // "cut" a transparent rectanlge in the middle of the "canvas" image
         context?.clear(centeredImageRect)
-        
         // draw the image into that rect
         useImage.draw(in: centeredImageRect)
-        
         // get the new "image in the center of a canvas image"
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
         return image!
-        
     }
-    
 }
 class PassthroughView: UIView {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let view = super.hitTest(point, with: event)
         return view == self ? nil : view
+    }
+}
+
+class AspectRatioBttn {
+    var name: String = ""
+    var image: UIImage?
+    var width: CGFloat
+    var height: CGFloat
+    
+    init(names: String, widths: CGFloat, heights: CGFloat) {
+        name = names
+        if names.hasPrefix("Facebook") {
+            image = UIImage(named: "Facebook")
+        } else {
+            image = UIImage(named: names)
+        }
+        width = widths
+        height = heights
     }
 }
 
