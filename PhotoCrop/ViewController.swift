@@ -67,7 +67,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         ]
         
         let backgroundImage = UIImageView(frame: UIScreen.main.bounds)              //Background view
-        backgroundImage.image = UIImage(named: "Slika")
+        backgroundImage.image = originalImg
         backgroundImage.contentMode = .scaleAspectFill
         self.view.insertSubview(backgroundImage, at: 0)
         
@@ -302,7 +302,6 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     }
     
     func cropToSelectedSize() -> UIImage {
-        print("gets here")
         var visibleRectes = CGRect(origin: scrollView.contentOffset, size: scrollView.bounds.size)
         let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
         let visibleAreaWidthMargin = (scrollView.frame.width - rec.width) / 2           //calculates the selected area
