@@ -40,8 +40,6 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     var wButton = CGFloat(0.0)
     var hButton = CGFloat(0.0)
     var bttnAspectRatios = [AspectRatioBttn]()
-
-    let buttonNames = ["Original", "Facebook post", "Facebook cover", "Twitter", "Pinterest", "LinkedIn post", "Instagram", "Google Plus", "Square", "16:9", "9:16", "4:3", "3:4"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,14 +49,14 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         imageHolder.image = originalImg
         
         bttnAspectRatios = [
-            AspectRatioBttn(names: "Original", widths: originalImg!.size.width, heights: originalImg!.size.width),
+            AspectRatioBttn(names: "Original", widths: imageHolder.image!.size.width, heights: imageHolder.image!.size.height),
             AspectRatioBttn(names: "Facebook post", widths: 1.91, heights: 1),
-            AspectRatioBttn(names: "Facebook cover", widths: 16, heights: 9),
-            AspectRatioBttn(names: "Twitter", widths: 16, heights: 9),
-            AspectRatioBttn(names: "Pinterest", widths: 16, heights: 9),
-            AspectRatioBttn(names: "LinkedIn post", widths: 16, heights: 9),
+            AspectRatioBttn(names: "Facebook cover", widths: 2.64, heights: 1),
+            AspectRatioBttn(names: "Twitter", widths: 2, heights: 1),
+            AspectRatioBttn(names: "Pinterest", widths: 1, heights: 1.5),
+            AspectRatioBttn(names: "LinkedIn post", widths: 1.76, heights: 1),
             AspectRatioBttn(names: "Instagram", widths: 1, heights: 1),
-            AspectRatioBttn(names: "Google Plus", widths: 16, heights: 9),
+            AspectRatioBttn(names: "Google Plus", widths: 2.5, heights: 1),
             AspectRatioBttn(names: "Square", widths: 1, heights: 1),
             AspectRatioBttn(names: "16:9", widths: 16, heights: 9),
             AspectRatioBttn(names: "9:16", widths: 9, heights: 16),
@@ -122,37 +120,53 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath) as! CollectionViewCell
-        let aspectRatio = bttnAspectRatios[indexPath.row]
-        if aspectRatio.name.hasPrefix("Facebook") {
-            cell.aspectRatioImageView.image = UIImage(named: "Facebookactive")
-        } else {
-            cell.aspectRatioImageView.image = UIImage(named: "\(aspectRatio.name)active")
+        if let cell = collectionView.cellForItem(at: indexPath) as? CollectionViewCell {
+            let aspectRatio = bttnAspectRatios[indexPath.row]
+            if aspectRatio.name.hasPrefix("Facebook") {
+                cell.aspectRatioImageView.image = UIImage(named: "Facebookactive")
+            } else {
+                cell.aspectRatioImageView.image = UIImage(named: "\(aspectRatio.name)active")
+            }
+            
+            scrollView.setZoomScale(1.0, animated: true)
+            clear()
+            
+            scrollView.isUserInteractionEnabled = true
+            let imgSize = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
+            var toRect: CGRect?
+            
+            wButton = aspectRatio.width
+            hButton = aspectRatio.height
+            let cropSize = calculateAspectRatio(width: wButton, height: hButton, originalImgFrame: imgSize)
+            if imgSize.height > imgSize.width {
+                toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
+            } else {
+                toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
+            }
+            let croppedImageRatio = cropImage(image: originalImg!, toRect: toRect!)
+            
+            let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
+            let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
+            updatePath(from: croppedImgFrame.origin, to: lastPoint)
+            let imgframeafterzooming = framed(for: originalImg!, inImageViewAspectFit: imageHolder!)
+            let zoomScale = rec.height / imgframeafterzooming.height
+            scrollView.setZoomScale(zoomScale, animated: true)
+            
+            
+            let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
+            let point = imgframe.origin.y - rec.minY //rename point
+            scrollView.contentInset = UIEdgeInsets(top: -point, left: rec.minX, bottom: -point, right: rec.minX)
+            
+            if imgframe.height < rec.height {
+                let distance = (rec.height - imgframe.height) / 2    //rename distance
+                let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
+                if rec.width > rec.height {
+                    scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
+                } else {
+                    scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
+                }
+            }
         }
-        scrollView.setZoomScale(1.0, animated: true)
-        clear()
-        
-        scrollView.isUserInteractionEnabled = true
-        let imgSize = frame(for: originalImg!, inImageViewAspectFit: scrollView)
-        var toRect: CGRect?
-
-        wButton = aspectRatio.width
-        hButton = aspectRatio.height
-        
-        let cropSize = calculateAspectRatio(width: wButton, height: hButton, originalImgFrame: imgSize)
-        if imgSize.height > imgSize.width {
-            toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
-        } else {
-            toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
-        }
-        let croppedImageRatio = cropImage(image: originalImg!, toRect: toRect!)
-        
-        let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
-        let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
-        updatePath(from: croppedImgFrame.origin, to: lastPoint)
-        let imgframeafterzooming = framed(for: originalImg!, inImageViewAspectFit: imageHolder!)
-        let zoomScale = rec.height / imgframeafterzooming.height
-        scrollView.setZoomScale(zoomScale, animated: true)
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
@@ -218,10 +232,10 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     
     func calculateAspectRatio(width: CGFloat, height: CGFloat, originalImgFrame: CGRect) -> CGFloat {
         if width > height {
-            let croppedSize = originalImgFrame.height * CGFloat(width) / CGFloat(height)
+            let croppedSize = originalImgFrame.height * width / height
             return croppedSize
         } else if height > width {
-            let croppedSize = originalImgFrame.height * CGFloat(width) / CGFloat(height)
+            let croppedSize = originalImgFrame.height * width / height
             return croppedSize
         } else {
             if originalImgFrame.height < originalImgFrame.width {
