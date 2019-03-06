@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     @IBOutlet weak var imageHolder: UIImageView!
     @IBOutlet weak var scrollView: UIScrollView! {
@@ -20,6 +20,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     }
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var doneBttn: UIButton!
+    @IBOutlet weak var imagePickerBttn: UIButton!
     
     var originalImg: UIImage?
     var croppedImage: UIImage?
@@ -40,16 +41,17 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     var wButton = CGFloat(0.0)
     var hButton = CGFloat(0.0)
     var bttnAspectRatios = [AspectRatioBttn]()
-    
+    var imagePicker = UIImagePickerController()
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        doneBttn.layer.cornerRadius = 15
-        self.collectionView.delegate = self
-        originalImg = UIImage(named: "Slika")
-        imageHolder.image = originalImg
         
+        doneBttn.layer.cornerRadius = 15
+        imagePickerBttn.layer.cornerRadius = 15
+        self.collectionView.delegate = self
+        self.collectionView.isUserInteractionEnabled = false
+    
         bttnAspectRatios = [
-            AspectRatioBttn(names: "Original", widths: imageHolder.image!.size.width, heights: imageHolder.image!.size.height),
             AspectRatioBttn(names: "Facebook post", widths: 1.91, heights: 1),
             AspectRatioBttn(names: "Facebook cover", widths: 2.64, heights: 1),
             AspectRatioBttn(names: "Twitter", widths: 2, heights: 1),
@@ -63,19 +65,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
             AspectRatioBttn(names: "4:3", widths: 4, heights: 3),
             AspectRatioBttn(names: "3:4", widths: 3, heights: 4)
         ]
-        
-        let backgroundImage = UIImageView(frame: UIScreen.main.bounds)              //Background view
-        backgroundImage.image = originalImg
-        backgroundImage.contentMode = .scaleAspectFill
-        self.view.insertSubview(backgroundImage, at: 0)
-        
-        let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)               //Background Blur
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = view.bounds
-        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        backgroundImage.addSubview(blurEffectView)
-        
-        
+
         scrollView.layer.borderWidth = 1
         scrollView.layer.borderColor = UIColor.black.cgColor
         
@@ -99,10 +89,52 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         scrollView.isUserInteractionEnabled = false
     }
     
+    @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]){
+        if let selectedImage = info[.originalImage] as? UIImage {
+            self.imageHolder.image = selectedImage
+            self.originalImg = selectedImage
+            
+            let backgroundImage = UIImageView(frame: UIScreen.main.bounds)              //Background view
+            backgroundImage.image = originalImg
+            backgroundImage.contentMode = .scaleAspectFill
+            self.view.insertSubview(backgroundImage, at: 0)
+            
+            let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)               //Background Blur
+            let blurEffectView = UIVisualEffectView(effect: blurEffect)
+            blurEffectView.frame = view.bounds
+            blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            backgroundImage.addSubview(blurEffectView)
+            
+            var buttonIndex = 0
+            for button in bttnAspectRatios {
+                if button.name == "Original" {
+                    bttnAspectRatios.remove(at: buttonIndex)
+                }
+                buttonIndex += 1
+            }
+            bttnAspectRatios.append(AspectRatioBttn(names: "Original", widths: imageHolder.image!.size.width, heights: imageHolder.image!.size.height))
+            collectionView.isUserInteractionEnabled = true
+            collectionView.reloadData()
+        }
+        self.dismiss(animated: true, completion: nil)
+    }
+    
     //MARK: Button Actions
     @IBAction func doneBttnPressed(_ sender: Any) {
         if let imgDidCrop = croppedImage {
             UIImageWriteToSavedPhotosAlbum(imgDidCrop, nil, nil, nil)
+        }
+    }
+    
+    @IBAction func imagePickerBttnPressed(_ sender: Any) {
+        if UIImagePickerController.isSourceTypeAvailable(.photoLibrary){
+            print("Button capture")
+            
+            imagePicker.delegate = self
+            imagePicker.sourceType = .photoLibrary
+            imagePicker.allowsEditing = false
+            
+            self.present(imagePicker, animated: true, completion: nil)
         }
     }
     
@@ -146,11 +178,24 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
             let croppedImageRatio = cropImage(image: originalImg!, toRect: toRect!)
             
             let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
-            let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
-            updatePath(from: croppedImgFrame.origin, to: lastPoint)
+            
+            if imgSize.width > imgSize.height {
+                let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
+                updatePath(from: croppedImgFrame.origin, to: lastPoint)                 //from and to are starting and ending points for selected area
+            } else {
+                let portait = CGPoint(x: croppedImgFrame.origin.y, y: croppedImgFrame.origin.x)
+                let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
+                updatePath(from: portait, to: lastPoint)
+            }
+    
             let imgframeafterzooming = framed(for: originalImg!, inImageViewAspectFit: imageHolder!)
-            let zoomScale = rec.height / imgframeafterzooming.height
-            scrollView.setZoomScale(zoomScale, animated: true)
+            if imgframeafterzooming.width > imgframeafterzooming.height {
+                let zoomScale = rec.height / imgframeafterzooming.height
+                scrollView.setZoomScale(zoomScale, animated: true)
+            } else {
+                let zoomScale = rec.width / imgframeafterzooming.width
+                scrollView.setZoomScale(zoomScale, animated: true)
+            }
             
             
             let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
@@ -267,6 +312,8 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         shapeLayer.isHidden = false
         let size = CGSize(width: point.x - startPoint.x, height: point.y - startPoint.y)
         rec = CGRect(origin: startPoint, size: size)
+
+        print("\(rec.width), \(rec.height)")
         shapeLayer.path = UIBezierPath(rect: rec).cgPath
         // Create the frame for the clear part
         let path = UIBezierPath(rect: overlay!.bounds)

@@ -84,7 +84,7 @@
                                 </connections>
                             </collectionView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O1D-7b-vry">
-                                <rect key="frame" x="131.33333333333334" y="145.66666666666666" width="112.33333333333334" height="33"/>
+                                <rect key="frame" x="222.66666666666666" y="145.66666666666666" width="112.33333333333334" height="33"/>
                                 <color key="backgroundColor" red="0.0" green="0.39903714364035087" blue="0.33436129385964913" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <state key="normal" title="Done">
@@ -94,16 +94,31 @@
                                     <action selector="doneBttnPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Var-TL-Yqb"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xNh-6Y-b7W">
+                                <rect key="frame" x="40.000000000000007" y="145.66666666666666" width="112.66666666666669" height="33"/>
+                                <color key="backgroundColor" red="0.1215686275" green="0.12941176469999999" blue="0.14117647059999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <state key="normal" title="Pick img">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="imagePickerBttnPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="oio-gO-k1B"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="xNh-6Y-b7W" firstAttribute="height" secondItem="O1D-7b-vry" secondAttribute="height" id="3wh-xE-w4g"/>
                             <constraint firstItem="ssZ-r1-Fs9" firstAttribute="top" secondItem="O1D-7b-vry" secondAttribute="bottom" constant="40" id="51F-o8-IgL"/>
                             <constraint firstItem="ssZ-r1-Fs9" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="7ob-r5-OMJ"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="O1D-7b-vry" secondAttribute="trailing" constant="40" id="8fy-cb-Mra"/>
+                            <constraint firstItem="xNh-6Y-b7W" firstAttribute="width" secondItem="O1D-7b-vry" secondAttribute="width" id="HJT-KT-deL"/>
                             <constraint firstItem="O1D-7b-vry" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.3" id="JGi-XE-Clr"/>
                             <constraint firstItem="azo-fC-a7U" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="KGh-WZ-cJh"/>
-                            <constraint firstItem="O1D-7b-vry" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QP6-Tp-Kjl"/>
+                            <constraint firstItem="xNh-6Y-b7W" firstAttribute="bottom" secondItem="O1D-7b-vry" secondAttribute="bottom" id="Thi-9g-KPz"/>
                             <constraint firstItem="azo-fC-a7U" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="UZK-Mi-Wns"/>
                             <constraint firstItem="azo-fC-a7U" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" multiplier="0.14" id="eVz-ZR-14Y"/>
+                            <constraint firstItem="xNh-6Y-b7W" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="40" id="pGm-hr-fMr"/>
                             <constraint firstItem="ssZ-r1-Fs9" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="qms-4a-oU3"/>
                             <constraint firstItem="azo-fC-a7U" firstAttribute="top" secondItem="ssZ-r1-Fs9" secondAttribute="bottom" constant="30" id="vMB-9E-Z6k"/>
                             <constraint firstItem="ssZ-r1-Fs9" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="waz-ea-izF"/>
@@ -112,8 +127,9 @@
                     </view>
                     <connections>
                         <outlet property="collectionView" destination="azo-fC-a7U" id="B9F-gq-PC8"/>
-                        <outlet property="doneBttn" destination="O1D-7b-vry" id="1KX-wm-On0"/>
+                        <outlet property="doneBttn" destination="O1D-7b-vry" id="Tdq-qR-YGk"/>
                         <outlet property="imageHolder" destination="Rax-xq-oVQ" id="Y2r-B4-qK5"/>
+                        <outlet property="imagePickerBttn" destination="xNh-6Y-b7W" id="nzC-Gg-LvG"/>
                         <outlet property="scrollView" destination="ssZ-r1-Fs9" id="6Xi-8w-Kek"/>
                     </connections>
                 </viewController>
