@@ -91,8 +91,17 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]){
         if let selectedImage = info[.originalImage] as? UIImage {
+            
+            self.imageHolder.image = nil
+            self.originalImg = nil
+            
             self.imageHolder.image = selectedImage
             self.originalImg = selectedImage
+            if let img = originalImg {
+
+                originalImg = img.fixedOrientation()
+                imageHolder.image = originalImg
+            }
             
             let backgroundImage = UIImageView(frame: UIScreen.main.bounds)              //Background view
             backgroundImage.image = originalImg
@@ -115,6 +124,8 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
             bttnAspectRatios.append(AspectRatioBttn(names: "Original", widths: imageHolder.image!.size.width, heights: imageHolder.image!.size.height))
             collectionView.isUserInteractionEnabled = true
             collectionView.reloadData()
+            clear()
+            scrollView.setZoomScale(1.0, animated: true)
         }
         self.dismiss(animated: true, completion: nil)
     }
@@ -128,8 +139,6 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     
     @IBAction func imagePickerBttnPressed(_ sender: Any) {
         if UIImagePickerController.isSourceTypeAvailable(.photoLibrary){
-            print("Button capture")
-            
             imagePicker.delegate = self
             imagePicker.sourceType = .photoLibrary
             imagePicker.allowsEditing = false
@@ -171,7 +180,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
             hButton = aspectRatio.height
             let cropSize = calculateAspectRatio(width: wButton, height: hButton, originalImgFrame: imgSize)
             if imgSize.height > imgSize.width {
-                toRect = CGRect(x: 0, y: 0, width: imgSize.width, height: cropSize)
+                toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
             } else {
                 toRect = CGRect(x: 0, y: 0, width: cropSize, height: imgSize.height)
             }
@@ -179,36 +188,58 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
             
             let croppedImgFrame = frame(for: croppedImageRatio!, inImageViewAspectFit: scrollView)
             
-            if imgSize.width > imgSize.height {
-                let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
-                updatePath(from: croppedImgFrame.origin, to: lastPoint)                 //from and to are starting and ending points for selected area
-            } else {
-                let portait = CGPoint(x: croppedImgFrame.origin.y, y: croppedImgFrame.origin.x)
-                let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
-                updatePath(from: portait, to: lastPoint)
-            }
+            let lastPoint = CGPoint(x: croppedImgFrame.maxX, y: croppedImgFrame.maxY)
+            updatePath(from: croppedImgFrame.origin, to: lastPoint)                 //from and to are starting and ending points for selected area
     
-            let imgframeafterzooming = framed(for: originalImg!, inImageViewAspectFit: imageHolder!)
-            if imgframeafterzooming.width > imgframeafterzooming.height {
-                let zoomScale = rec.height / imgframeafterzooming.height
+            if imgSize.width > imgSize.height {
+                let zoomScale = rec.height / imgSize.height
                 scrollView.setZoomScale(zoomScale, animated: true)
             } else {
-                let zoomScale = rec.width / imgframeafterzooming.width
+                let zoomScale = rec.width / imgSize.width
                 scrollView.setZoomScale(zoomScale, animated: true)
             }
-            
             
             let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
-            let point = imgframe.origin.y - rec.minY //rename point
-            scrollView.contentInset = UIEdgeInsets(top: -point, left: rec.minX, bottom: -point, right: rec.minX)
-            
-            if imgframe.height < rec.height {
-                let distance = (rec.height - imgframe.height) / 2    //rename distance
-                let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
-                if rec.width > rec.height {
-                    scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
-                } else {
-                    scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
+            if originalImg!.size.width > originalImg!.size.height {
+                let point = imgframe.origin.y - rec.minY //rename point
+                scrollView.contentInset = UIEdgeInsets(top: -point, left: rec.minX, bottom: -point, right: rec.minX)
+                
+                if imgframe.height < rec.height {
+                    let distance = (rec.height - imgframe.height) / 2    //rename distance
+                    let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
+                    if rec.width > rec.height {
+                        scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
+                    } else {
+                        scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
+                    }
+                }
+            } else {
+                let point = imgframe.origin.y - rec.minY //rename point
+                let point2 = imgframe.origin.x - rec.minX
+                scrollView.contentInset = UIEdgeInsets(top: -point, left: -point2, bottom: -point, right: -point2)
+                
+                DispatchQueue.global(qos: .background).async {
+                    if imgframe.width <= self.rec.width {
+                        if self.rec.height > self.rec.width {
+                            DispatchQueue.main.async {
+                                let offsetX = max((self.scrollView.bounds.width - self.scrollView.contentSize.width) * 0.5, 0)
+                                self.scrollView.contentInset = UIEdgeInsets(top: -point, left: offsetX, bottom: -point, right: 0)
+                            }
+                        }
+                    }
+                    if imgframe.width <= self.rec.width {
+                        if self.rec.height > self.rec.width {
+                            DispatchQueue.main.async {
+                                let offsetX = max((self.scrollView.bounds.width - self.scrollView.contentSize.width) * 0.5, 0)
+                                self.scrollView.contentInset = UIEdgeInsets(top: -point, left: offsetX, bottom: -point, right: 0)
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                let centerOffsetX = (self.scrollView.contentSize.width - self.scrollView.frame.size.width) / 2
+                                self.scrollView.contentInset = UIEdgeInsets(top: -point, left: -centerOffsetX, bottom: -point, right: -centerOffsetX)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -231,16 +262,46 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
         let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
-        let point = imgframe.origin.y - rec.minY //rename point
-        scrollView.contentInset = UIEdgeInsets(top: -point, left: rec.minX, bottom: -point, right: rec.minX)
-        
-        if imgframe.height < rec.height {
-            let distance = (rec.height - imgframe.height) / 2    //rename distance
-            let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
-            if rec.width > rec.height {
-                scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
-            } else {
-                scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
+        if originalImg!.size.width > originalImg!.size.height {
+            let point = imgframe.origin.y - rec.minY //rename point
+            scrollView.contentInset = UIEdgeInsets(top: -point, left: rec.minX, bottom: -point, right: rec.minX)
+            
+            if imgframe.height < rec.height {
+                let distance = (rec.height - imgframe.height) / 2    //rename distance
+                let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
+                if rec.width > rec.height {
+                    scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
+                } else {
+                    scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
+                }
+            }
+        } else {
+            let point = imgframe.origin.y - rec.minY //rename point
+            let point2 = imgframe.origin.x - rec.minX
+            scrollView.contentInset = UIEdgeInsets(top: -point, left: -point2, bottom: -point, right: -point2)
+            
+            DispatchQueue.global(qos: .background).async {
+                if imgframe.width <= self.rec.width {
+                    if self.rec.height > self.rec.width {
+                        DispatchQueue.main.async {
+                            let offsetX = max((self.scrollView.bounds.width - self.scrollView.contentSize.width) * 0.5, 0)
+                            self.scrollView.contentInset = UIEdgeInsets(top: -point, left: offsetX, bottom: -point, right: 0)
+                        }
+                    }
+                }
+                if imgframe.width <= self.rec.width {
+                    if self.rec.height > self.rec.width {
+                        DispatchQueue.main.async {
+                            let offsetX = max((self.scrollView.bounds.width - self.scrollView.contentSize.width) * 0.5, 0)
+                            self.scrollView.contentInset = UIEdgeInsets(top: -point, left: offsetX, bottom: -point, right: 0)
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            let centerOffsetX = (self.scrollView.contentSize.width - self.scrollView.frame.size.width) / 2
+                            self.scrollView.contentInset = UIEdgeInsets(top: -point, left: -centerOffsetX, bottom: -point, right: -centerOffsetX)
+                        }
+                    }
+                }
             }
         }
         croppedImage = cropToSelectedSize()
@@ -248,15 +309,46 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         let imgframe = framed(for: originalImg!, inImageViewAspectFit: imageHolder)
-        let point = imgframe.origin.y - rec.minY //rename point
-        scrollView.contentInset = UIEdgeInsets(top: -point, left: rec.minX, bottom: -point, right: rec.minX)
-        if imgframe.height < rec.height {
-            let distance = (rec.height - imgframe.height) / 2    //rename distance
-            let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
-            if rec.width > rec.height {
-                scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
-            } else {
-                scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
+        if originalImg!.size.width > originalImg!.size.height {
+            let point = imgframe.origin.y - rec.minY //rename point
+            scrollView.contentInset = UIEdgeInsets(top: -point, left: rec.minX, bottom: -point, right: rec.minX)
+            
+            if imgframe.height < rec.height {
+                let distance = (rec.height - imgframe.height) / 2    //rename distance
+                let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
+                if rec.width > rec.height {
+                    scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: offsetY, bottom: -point + distance, right: 0)
+                } else {
+                    scrollView.contentInset = UIEdgeInsets(top: -point + distance, left: rec.minX, bottom: -point + distance, right: rec.minX)
+                }
+            }
+        } else {
+            let point = imgframe.origin.y - rec.minY //rename point
+            let point2 = imgframe.origin.x - rec.minX
+            scrollView.contentInset = UIEdgeInsets(top: -point, left: -point2, bottom: -point, right: -point2)
+            
+            DispatchQueue.global(qos: .background).async {
+                if imgframe.width <= self.rec.width {
+                    if self.rec.height > self.rec.width {
+                        DispatchQueue.main.async {
+                            let offsetX = max((self.scrollView.bounds.width - self.scrollView.contentSize.width) * 0.5, 0)
+                            self.scrollView.contentInset = UIEdgeInsets(top: -point, left: offsetX, bottom: -point, right: 0)
+                        }
+                    }
+                }
+                if imgframe.width <= self.rec.width {
+                    if self.rec.height > self.rec.width {
+                        DispatchQueue.main.async {
+                            let offsetX = max((self.scrollView.bounds.width - self.scrollView.contentSize.width) * 0.5, 0)
+                            self.scrollView.contentInset = UIEdgeInsets(top: -point, left: offsetX, bottom: -point, right: 0)
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            let centerOffsetX = (self.scrollView.contentSize.width - self.scrollView.frame.size.width) / 2
+                            self.scrollView.contentInset = UIEdgeInsets(top: -point, left: -centerOffsetX, bottom: -point, right: -centerOffsetX)
+                        }
+                    }
+                }
             }
         }
     }
@@ -276,21 +368,8 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     }
     
     func calculateAspectRatio(width: CGFloat, height: CGFloat, originalImgFrame: CGRect) -> CGFloat {
-        if width > height {
-            let croppedSize = originalImgFrame.height * width / height
-            return croppedSize
-        } else if height > width {
-            let croppedSize = originalImgFrame.height * width / height
-            return croppedSize
-        } else {
-            if originalImgFrame.height < originalImgFrame.width {
-                let croppedSize = originalImgFrame.height
-                return croppedSize
-            } else {
-                let croppedSize = originalImgFrame.width
-                return croppedSize
-            }
-        }
+        let croppedSize = originalImgFrame.height * width / height
+        return croppedSize
     }
     
     func cropImage(image: UIImage, toRect: CGRect) -> UIImage? {
@@ -313,7 +392,6 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         let size = CGSize(width: point.x - startPoint.x, height: point.y - startPoint.y)
         rec = CGRect(origin: startPoint, size: size)
 
-        print("\(rec.width), \(rec.height)")
         shapeLayer.path = UIBezierPath(rect: rec).cgPath
         // Create the frame for the clear part
         let path = UIBezierPath(rect: overlay!.bounds)
