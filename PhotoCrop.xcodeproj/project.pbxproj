@@ -14,6 +14,7 @@
 		F94C2DA22204837F009E0F7E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F94C2DA12204837F009E0F7E /* Assets.xcassets */; };
 		F94C2DA52204837F009E0F7E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F94C2DA32204837F009E0F7E /* LaunchScreen.storyboard */; };
 		F97423A7221C0093001997AA /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F97423A6221C0093001997AA /* Extensions.swift */; };
+		F9958A5C2232D2DC00D8298A /* AspectRatioButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9958A5B2232D2DC00D8298A /* AspectRatioButtons.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		F94C2DA42204837F009E0F7E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F94C2DA62204837F009E0F7E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F97423A6221C0093001997AA /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		F9958A5B2232D2DC00D8298A /* AspectRatioButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AspectRatioButtons.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 				F94C2D9A2204836F009E0F7E /* AppDelegate.swift */,
 				F97423A6221C0093001997AA /* Extensions.swift */,
 				F94C2D9C2204836F009E0F7E /* ViewController.swift */,
+				F9958A5B2232D2DC00D8298A /* AspectRatioButtons.swift */,
 				F94C2D9E2204836F009E0F7E /* Main.storyboard */,
 				F94C2DA12204837F009E0F7E /* Assets.xcassets */,
 				F94C2DA32204837F009E0F7E /* LaunchScreen.storyboard */,
@@ -144,6 +147,7 @@
 				F94C2D9D2204836F009E0F7E /* ViewController.swift in Sources */,
 				F97423A7221C0093001997AA /* Extensions.swift in Sources */,
 				F9207BB4222D627800D71246 /* CollectionViewCell.swift in Sources */,
+				F9958A5C2232D2DC00D8298A /* AspectRatioButtons.swift in Sources */,
 				F94C2D9B2204836F009E0F7E /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

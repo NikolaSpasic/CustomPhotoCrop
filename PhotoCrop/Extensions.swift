@@ -8,15 +8,6 @@
 
 import UIKit
 
-extension UIView {
-    func snapshot(afterScreenUpdates: Bool = false) -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(bounds.size, isOpaque, 0)
-        drawHierarchy(in: bounds, afterScreenUpdates: afterScreenUpdates)
-        let image = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        return image
-    }
-}
 extension UIImage {
     func imageByAddingBorder(borderWidth width: CGFloat, borderColor color: UIColor) -> UIImage {
         UIGraphicsBeginImageContext(self.size)
