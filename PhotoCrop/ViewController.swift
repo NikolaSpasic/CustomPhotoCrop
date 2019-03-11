@@ -42,6 +42,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     var hButton = CGFloat(0.0)
     var bttnAspectRatios = [AspectRatioBttn]()
     var imagePicker = UIImagePickerController()
+    var lastSelectedItem: String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,6 +88,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         self.view.addSubview(overlay!)
         scrollView.bounces = false
         scrollView.isUserInteractionEnabled = false
+        doneBttn.isUserInteractionEnabled = false
     }
     
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]){
@@ -126,15 +128,17 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
             collectionView.reloadData()
             clear()
             scrollView.setZoomScale(1.0, animated: true)
+            doneBttn.isUserInteractionEnabled = false
+            scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
         }
         self.dismiss(animated: true, completion: nil)
     }
     
     //MARK: Button Actions
     @IBAction func doneBttnPressed(_ sender: Any) {
-        if let imgDidCrop = croppedImage {
-            UIImageWriteToSavedPhotosAlbum(imgDidCrop, nil, nil, nil)
-        }
+        cropToSelectedSize(completion: {resultImg in
+            UIImageWriteToSavedPhotosAlbum(resultImg, nil, nil, nil)
+        })
     }
     
     @IBAction func imagePickerBttnPressed(_ sender: Any) {
@@ -156,7 +160,17 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "collectionCell", for: indexPath) as! CollectionViewCell
         let aspectRatio = bttnAspectRatios[indexPath.row]
         cell.aspectRatioLabel.text = aspectRatio.name
-        cell.aspectRatioImageView.image = aspectRatio.image
+        
+        if lastSelectedItem == aspectRatio.name {
+            if lastSelectedItem!.hasPrefix("Facebook") {
+                cell.aspectRatioImageView.image = UIImage(named: "Facebookactive")
+            } else {
+                cell.aspectRatioImageView.image = UIImage(named: "\(lastSelectedItem!)active")
+            }
+        } else {
+            cell.aspectRatioImageView.image = aspectRatio.image
+        }
+        
         return cell
     }
     
@@ -168,11 +182,11 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
             } else {
                 cell.aspectRatioImageView.image = UIImage(named: "\(aspectRatio.name)active")
             }
-            
             scrollView.setZoomScale(1.0, animated: true)
             clear()
-            
+            lastSelectedItem = aspectRatio.name
             scrollView.isUserInteractionEnabled = true
+            doneBttn.isUserInteractionEnabled = true
             let imgSize = frame(for: originalImg!, inImageViewAspectFit: imageHolder.frame)
             var toRect: CGRect?
             
@@ -198,19 +212,8 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
                 let zoomScale = rec.width / imgSize.width
                 scrollView.setZoomScale(zoomScale, animated: true)
             }
-            
             setScrollViewContentInset()
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        if let cell = collectionView.cellForItem(at: indexPath) as? CollectionViewCell {
-            let aspectRatio = bttnAspectRatios[indexPath.row]
-            if aspectRatio.name.hasPrefix("Facebook") {
-                cell.aspectRatioImageView.image = UIImage(named: "Facebook")
-            } else {
-                cell.aspectRatioImageView.image = UIImage(named: "\(aspectRatio.name)")
-            }
+            collectionView.reloadData()
         }
     }
     
@@ -220,31 +223,10 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
         setScrollViewContentInset()
-        cropToSelectedSize(completion: {resultImg in
-            self.croppedImage = resultImg
-        })
     }
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         setScrollViewContentInset()
-    }
-    
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        if scrollView != collectionView {
-            cropToSelectedSize(completion: {resultImg in
-                self.croppedImage = resultImg
-            })
-        }
-    }
-    
-    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if !decelerate {
-            if scrollView != collectionView {
-                cropToSelectedSize(completion: {resultImg in
-                    self.croppedImage = resultImg
-                })
-            }
-        }
     }
     
     func calculateAspectRatio(width: CGFloat, height: CGFloat, originalImgFrame: CGRect) -> CGFloat {
@@ -327,21 +309,19 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
             
             visibleRectes.origin.x = (scrollViewOffset.x - ((imageHolderFrame.width - imgframe.width) / 2) + visibleAreaWidthMargin) * ratioOfImgsWidth                                                            //calculates image frame from imageview, adds selected area, and the whole value is substracted from original content offset. It is then multiplied by ratio of original image to image inside the imageview.
             visibleRectes.origin.y = (scrollViewOffset.y - ((imageHolderFrame.height - imgframe.height) / 2) + visibleAreaHeightMargin) * ratioOfImgsHeight
-            let blankSpace = (self.rec.width - imgframe.width) * ratioOfImgsWidth
             
             DispatchQueue.main.async {
-                
                 let imageRef = self.originalImg!.cgImage!.cropping(to: visibleRectes)
                 var croppedImage = UIImage(cgImage: imageRef!)
                 if imgframe.width < self.rec.width {
+                    let blankSpace = (self.rec.width - imgframe.width) * ratioOfImgsWidth
                     let expandedSize = CGSize(width: croppedImage.size.width + blankSpace, height: croppedImage.size.height)
-                    let imageOnWhiteCanvas = self.drawImageOnCanvas(croppedImage, canvasSize: expandedSize, canvasColor: .white)
-                    croppedImage = imageOnWhiteCanvas
+                    croppedImage = self.drawImageOnCanvas(croppedImage, canvasSize: expandedSize, canvasColor: .white)
                 }
                 if imgframe.height < self.rec.height {
+                    let blankSpace = (self.rec.height - imgframe.height) * ratioOfImgsWidth
                     let expandedSize = CGSize(width: croppedImage.size.width, height: croppedImage.size.height + blankSpace)
-                    let imageOnWhiteCanvas = self.drawImageOnCanvas(croppedImage, canvasSize: expandedSize, canvasColor: .white)
-                    croppedImage = imageOnWhiteCanvas
+                    croppedImage = self.drawImageOnCanvas(croppedImage, canvasSize: expandedSize, canvasColor: .white)
                 }
                 completion(croppedImage)
             }
@@ -400,15 +380,6 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
                 
                 DispatchQueue.main.async {
                     self.scrollView.contentInset = UIEdgeInsets(top: -point, left: -point2, bottom: -point, right: -point2)
-                }
-                
-                if imgframe.width <= self.rec.width {
-                    if self.rec.height > self.rec.width {
-                        DispatchQueue.main.async {
-                            let offsetX = max((self.scrollView.bounds.width - self.scrollView.contentSize.width) * 0.5, 0)
-                            self.scrollView.contentInset = UIEdgeInsets(top: -point, left: offsetX, bottom: -point, right: 0)
-                        }
-                    }
                 }
                 if imgframe.width <= self.rec.width {
                     if self.rec.height > self.rec.width {
