@@ -30,7 +30,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         let _shapeLayer = CAShapeLayer()
         _shapeLayer.fillColor = UIColor.clear.cgColor
         _shapeLayer.strokeColor = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1).cgColor
-        _shapeLayer.lineWidth = 2
+        _shapeLayer.lineWidth = 1
         return _shapeLayer
     }()
     private var startPoint: CGPoint!
@@ -56,7 +56,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         scrollView.layer.borderColor = UIColor.black.cgColor
         
         // Create a view filling the imageView.
-        overlay = PassthroughView(frame: scrollView.frame)
+        overlay = PassthroughView(frame: CGRect(x: 0.0, y: UIScreen.main.bounds.height / 4.5, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width))
         overlay!.layer.addSublayer(shapeLayer)
         // Set a semi-transparent, black background.
         overlay!.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
@@ -74,6 +74,11 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         scrollView.bounces = false
         scrollView.isUserInteractionEnabled = false
         doneBttn.isUserInteractionEnabled = false
+
+        overlay!.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        overlay!.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
+        overlay!.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
+        overlay!.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
     }
     
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]){
@@ -299,6 +304,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
 
         var visibleRectes = CGRect(origin: scrollView.contentOffset, size: scrollView.bounds.size)
         let imgframe = frame(for: originalImg!, inImageViewAspectFit: imageHolder.frame)
+
 
         DispatchQueue.global(qos: .background).async {
             let visibleAreaWidthMargin = (scrollViewFrame.width - self.rec.width) / 2           //calculates the selected area
