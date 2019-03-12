@@ -51,21 +51,6 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         imagePickerBttn.layer.cornerRadius = 15
         self.collectionView.delegate = self
         self.collectionView.isUserInteractionEnabled = false
-    
-        bttnAspectRatios = [
-            AspectRatioBttn(names: "Facebook post", widths: 1.91, heights: 1),
-            AspectRatioBttn(names: "Facebook cover", widths: 2.64, heights: 1),
-            AspectRatioBttn(names: "Twitter", widths: 2, heights: 1),
-            AspectRatioBttn(names: "Pinterest", widths: 1, heights: 1.5),
-            AspectRatioBttn(names: "LinkedIn post", widths: 1.76, heights: 1),
-            AspectRatioBttn(names: "Instagram", widths: 1, heights: 1),
-            AspectRatioBttn(names: "Google Plus", widths: 2.5, heights: 1),
-            AspectRatioBttn(names: "Square", widths: 1, heights: 1),
-            AspectRatioBttn(names: "16:9", widths: 16, heights: 9),
-            AspectRatioBttn(names: "9:16", widths: 9, heights: 16),
-            AspectRatioBttn(names: "4:3", widths: 4, heights: 3),
-            AspectRatioBttn(names: "3:4", widths: 3, heights: 4)
-        ]
 
         scrollView.layer.borderWidth = 1
         scrollView.layer.borderColor = UIColor.black.cgColor
@@ -123,12 +108,27 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
                 }
                 buttonIndex += 1
             }
-            bttnAspectRatios.append(AspectRatioBttn(names: "Original", widths: imageHolder.image!.size.width, heights: imageHolder.image!.size.height))
+            bttnAspectRatios = [
+                AspectRatioBttn(names: "Original", widths: imageHolder.image!.size.width, heights: imageHolder.image!.size.height),
+                AspectRatioBttn(names: "Facebook post", widths: 1.91, heights: 1),
+                AspectRatioBttn(names: "Facebook cover", widths: 2.64, heights: 1),
+                AspectRatioBttn(names: "Twitter", widths: 2, heights: 1),
+                AspectRatioBttn(names: "Pinterest", widths: 1, heights: 1.5),
+                AspectRatioBttn(names: "LinkedIn post", widths: 1.76, heights: 1),
+                AspectRatioBttn(names: "Instagram", widths: 1, heights: 1),
+                AspectRatioBttn(names: "Google Plus", widths: 2.5, heights: 1),
+                AspectRatioBttn(names: "Square", widths: 1, heights: 1),
+                AspectRatioBttn(names: "16:9", widths: 16, heights: 9),
+                AspectRatioBttn(names: "9:16", widths: 9, heights: 16),
+                AspectRatioBttn(names: "4:3", widths: 4, heights: 3),
+                AspectRatioBttn(names: "3:4", widths: 3, heights: 4)
+            ]
+            collectionView.reloadData()
             collectionView.isUserInteractionEnabled = true
             collectionView.reloadData()
             clear()
             scrollView.setZoomScale(1.0, animated: true)
-            doneBttn.isUserInteractionEnabled = false
+            doneBttn.isUserInteractionEnabled = true
             scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
         }
         self.dismiss(animated: true, completion: nil)
@@ -136,9 +136,13 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     
     //MARK: Button Actions
     @IBAction func doneBttnPressed(_ sender: Any) {
-        cropToSelectedSize(completion: {resultImg in
-            UIImageWriteToSavedPhotosAlbum(resultImg, nil, nil, nil)
-        })
+        if lastSelectedItem == nil {
+            UIImageWriteToSavedPhotosAlbum(originalImg!, nil, nil, nil)
+        } else {
+            cropToSelectedSize(completion: {resultImg in
+                UIImageWriteToSavedPhotosAlbum(resultImg, nil, nil, nil)
+            })
+        }
     }
     
     @IBAction func imagePickerBttnPressed(_ sender: Any) {
@@ -292,24 +296,23 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         let scrollViewOffset = scrollView.contentOffset
         let imageHolderFrame = imageHolder.frame
         let scrollViewFrame = scrollView.frame
-        
+
         var visibleRectes = CGRect(origin: scrollView.contentOffset, size: scrollView.bounds.size)
         let imgframe = frame(for: originalImg!, inImageViewAspectFit: imageHolder.frame)
-        
 
         DispatchQueue.global(qos: .background).async {
             let visibleAreaWidthMargin = (scrollViewFrame.width - self.rec.width) / 2           //calculates the selected area
             let visibleAreaHeightMargin = (scrollViewFrame.height - self.rec.height) / 2
-            
+
             let ratioOfImgsHeight = self.originalImg!.size.height / imgframe.height          //calculates size ratio of displayed image and original, loaded image
             let ratioOfImgsWidth = self.originalImg!.size.width / imgframe.width
-            
+
             visibleRectes.size.width = self.rec.width * ratioOfImgsWidth
             visibleRectes.size.height = self.rec.height * ratioOfImgsHeight
-            
+
             visibleRectes.origin.x = (scrollViewOffset.x - ((imageHolderFrame.width - imgframe.width) / 2) + visibleAreaWidthMargin) * ratioOfImgsWidth                                                            //calculates image frame from imageview, adds selected area, and the whole value is substracted from original content offset. It is then multiplied by ratio of original image to image inside the imageview.
             visibleRectes.origin.y = (scrollViewOffset.y - ((imageHolderFrame.height - imgframe.height) / 2) + visibleAreaHeightMargin) * ratioOfImgsHeight
-            
+
             DispatchQueue.main.async {
                 let imageRef = self.originalImg!.cgImage!.cropping(to: visibleRectes)
                 var croppedImage = UIImage(cgImage: imageRef!)
