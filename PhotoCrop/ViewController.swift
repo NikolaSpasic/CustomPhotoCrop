@@ -1,10 +1,3 @@
-//
-//  ViewController.swift
-//  PhotoCrop
-//
-//  Created by VTS AppsTeam on 2/1/19.
-//  Copyright © 2019 VTS AppsTeam. All rights reserved.
-//
 
 import UIKit
 
@@ -25,6 +18,8 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     var originalImg: UIImage?
     var croppedImage: UIImage?
     var rec: CGRect!
+    
+    let backgroundImage = UIImageView(frame: UIScreen.main.bounds)
 
     private let shapeLayer: CAShapeLayer = {
         let _shapeLayer = CAShapeLayer()
@@ -47,16 +42,26 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        doneBttn.layer.cornerRadius = 15
-        imagePickerBttn.layer.cornerRadius = 15
         self.collectionView.delegate = self
         self.collectionView.isUserInteractionEnabled = false
-
+        
+        scrollView.bounces = false
+        scrollView.isUserInteractionEnabled = false
+        doneBttn.isUserInteractionEnabled = false
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        doneBttn.layer.cornerRadius = 15
+        imagePickerBttn.layer.cornerRadius = 15
+        
         scrollView.layer.borderWidth = 1
         scrollView.layer.borderColor = UIColor.black.cgColor
-        
-        // Create a view filling the imageView.
-        overlay = PassthroughView(frame: CGRect(x: 0.0, y: UIScreen.main.bounds.height / 4.5, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width))
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+
+        overlay = PassthroughView(frame: scrollView.frame)
         overlay!.layer.addSublayer(shapeLayer)
         // Set a semi-transparent, black background.
         overlay!.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
@@ -69,16 +74,16 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         // Set the mask of the view.
         overlay!.layer.mask = maskLayer
         
-        // Add the view so it is visible.
+        
         self.view.addSubview(overlay!)
-        scrollView.bounces = false
-        scrollView.isUserInteractionEnabled = false
-        doneBttn.isUserInteractionEnabled = false
-
-        overlay!.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-        overlay!.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
-        overlay!.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
-        overlay!.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        
+        backgroundImage.contentMode = .scaleAspectFill
+        self.view.insertSubview(backgroundImage, at: 0)
+        let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = view.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        backgroundImage.addSubview(blurEffectView)
     }
     
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]){
@@ -95,16 +100,8 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
                 imageHolder.image = originalImg
             }
             
-            let backgroundImage = UIImageView(frame: UIScreen.main.bounds)              //Background view
+                          //Background view
             backgroundImage.image = originalImg
-            backgroundImage.contentMode = .scaleAspectFill
-            self.view.insertSubview(backgroundImage, at: 0)
-            
-            let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.dark)               //Background Blur
-            let blurEffectView = UIVisualEffectView(effect: blurEffect)
-            blurEffectView.frame = view.bounds
-            blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            backgroundImage.addSubview(blurEffectView)
             
             var buttonIndex = 0
             for button in bttnAspectRatios {
