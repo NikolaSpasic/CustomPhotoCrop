@@ -125,10 +125,9 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
                 AspectRatioBttn(names: "4:3", widths: 4, heights: 3),
                 AspectRatioBttn(names: "3:4", widths: 3, heights: 4)
             ]
-            collectionView.reloadData()
             collectionView.isUserInteractionEnabled = true
             collectionView.reloadData()
-            clear()
+            overlay!.alpha = 0
             scrollView.setZoomScale(1.0, animated: true)
             doneBttn.isUserInteractionEnabled = true
             scrollView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
@@ -189,7 +188,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
                 cell.aspectRatioImageView.image = UIImage(named: "\(aspectRatio.name)active")
             }
             scrollView.setZoomScale(1.0, animated: true)
-            clear()
+            overlay!.alpha = 0
             lastSelectedItem = aspectRatio.name
             scrollView.isUserInteractionEnabled = true
             doneBttn.isUserInteractionEnabled = true
@@ -245,13 +244,6 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDa
         let croppedCGImage: CGImage! = cgImage.cropping(to: toRect)
         
         return UIImage(cgImage: croppedCGImage)
-    }
-    
-    func clear() {
-        imageHolder.layer.sublayers = nil
-        overlay!.layer.addSublayer(shapeLayer)
-        overlay!.alpha = 0
-        self.view.addSubview(overlay!)
     }
     
     private func updatePath(from startPoint: CGPoint, to point: CGPoint) {
